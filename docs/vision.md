@@ -108,9 +108,15 @@ This project grew out of a mesh repair pipeline (`repair_topo_stl.py`) built to 
 
 ## Status
 
-**F1: Core Infrastructure** — Complete. Rendering pipeline, tool orchestration, knowledge system, and skill router are implemented and tested. The package is pip-installable with 73 passing tests.
+**F1: Core Infrastructure** — Complete. Rendering pipeline, tool orchestration, knowledge system, and skill router.
 
-**Next**: F2 (Mesh Analysis & Repair) to enable Fix mode, or F3 (Parametric CAD) to enable Create mode. See [feature-chunking-strategy.md](feature-chunking-strategy.md) for the full roadmap.
+**F2: Mesh Analysis & Repair** — Complete. 10 defect detectors, 6 repair strategies, health scoring, multi-format export.
+
+**F3: Parametric CAD** — Complete. Session-based OpenSCAD compilation, 4-check FDM printability validation, BOSL2 detection.
+
+**F4: Model Modification** — Complete. Boolean CSG (manifold3d), uniform/non-uniform/targeted scaling with screw hole feature detection, model combining with alignment, text engraving/embossing (OpenSCAD extended tier), plane-based splitting with alignment pins, before/after visual comparison, 4 knowledge YAML files.
+
+**Next**: F5 (G-code & Slicing) to enable Validate mode, or F6 (Print Diagnosis) to enable Diagnose mode.
 
 Research (completed):
 1. Visual feedback architecture — matplotlib mplot3d with Agg backend for headless rendering

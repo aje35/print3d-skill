@@ -11,15 +11,15 @@ Six features, ordered by dependency. Each passes through the full
 spec-kit pipeline: `specify → clarify → plan → tasks → implement`.
 
 ```
-F1  Core Infrastructure
- ├── F2  Mesh Analysis & Repair  (Fix mode)
- ├── F3  Parametric CAD          (Create mode)
- │    └── F4  Model Modification (Modify mode)
- ├── F5  G-code & Slicing        (Validate mode + slicer/printer)
- └── F6  Print Diagnosis         (Diagnose mode)
+F1  Core Infrastructure          ✓ Complete
+ ├── F2  Mesh Analysis & Repair  ✓ Complete (Fix mode)
+ ├── F3  Parametric CAD          ✓ Complete (Create mode)
+ │    └── F4  Model Modification ✓ Complete (Modify mode)
+ ├── F5  G-code & Slicing          Planned  (Validate mode + slicer/printer)
+ └── F6  Print Diagnosis           Planned  (Diagnose mode)
 
 Parallel opportunities:
-  F4 and F5 can be specified in parallel (independent domains)
+  F5 and F6 can be specified in parallel (independent domains)
 ```
 
 ---

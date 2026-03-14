@@ -3,7 +3,7 @@
 ## Active Technologies
 
 - Python 3.10+ (src layout, PEP 621)
-- trimesh (mesh I/O, analysis, repair, ray casting for printability), manifold3d (boolean CSG), numpy, matplotlib (Agg), Pillow, PyYAML
+- trimesh (mesh I/O, analysis, repair, ray casting for printability, primitives, splitting), manifold3d (boolean CSG), numpy, matplotlib (Agg), Pillow, PyYAML
 - OpenSCAD CLI (extended tier, optional), BOSL2 library (optional)
 
 ## Project Structure
@@ -11,6 +11,7 @@
 ```text
 src/print3d_skill/          # Main package (src layout)
   create/                   # Create mode: session, compiler, printability, BOSL2
+  modify/                   # Modify mode: boolean, scale, combine, text, split
   analysis/                 # Mesh defect detection
   repair/                   # Mesh repair pipeline
   export/                   # Format-specific mesh exporters
@@ -19,6 +20,7 @@ src/print3d_skill/          # Main package (src layout)
   knowledge/                # YAML knowledge loader
   knowledge_base/           # Bundled YAML knowledge files (package data)
     create/                 # Create mode knowledge (tolerances, patterns, BOSL2)
+    modify/                 # Modify mode knowledge (booleans, engraving, pins, splitting)
   modes/                    # Workflow handlers (5 modes)
   models/                   # Dataclasses
   router.py                 # Mode dispatch
@@ -34,13 +36,13 @@ specs/                      # Feature specs (spec-kit pipeline)
 
 ```bash
 pip install -e ".[dev]"     # Install in dev mode
-pytest                      # Run tests (73 passing)
+pytest                      # Run tests (341 passing)
 pytest --cov=print3d_skill  # Run tests with coverage
 ruff check src/ tests/      # Lint
 ruff format src/ tests/     # Format
 ```
 
-## Public API (13 functions)
+## Public API (14 functions)
 
 - `render_preview(mesh_path, output_path)` — multi-angle PNG preview
 - `get_capability(name)` — capability-based tool lookup
@@ -54,6 +56,7 @@ ruff format src/ tests/     # Format
 - `export_mesh(mesh_path, output_dir, formats)` — multi-format mesh export
 - `create_design(request, config)` — Create mode infrastructure setup
 - `validate_printability(mesh_path, config)` — FDM printability validation (4 checks)
+- `modify_mesh(mesh_path, operation, **params)` — standalone mesh modification (boolean, scale, combine, engrave, split)
 - `start_session / submit_iteration / export_design` — session-based create pipeline (via print3d_skill.create)
 
 ## Code Style
@@ -82,10 +85,13 @@ When making changes, update the relevant docs:
 
 - F1: Core Infrastructure (rendering, tool orchestration, knowledge system, skill router)
 - F2: Mesh Analysis & Repair (10 detectors, 6 repair strategies, health scoring, export)
+- F3: Parametric CAD (OpenSCAD compilation, session-based create pipeline, BOSL2, printability)
+- F4: Model Modification (boolean CSG, scaling with feature warnings, combining, text engraving, splitting with alignment pins, before/after comparison)
 
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->
 
 ## Recent Changes
+- 004-model-modification: Implementation complete — Modify mode with boolean CSG (manifold3d), uniform/non-uniform/targeted scaling, feature detection for screw holes, model combining with alignment, text engraving/embossing (OpenSCAD), plane-based splitting with alignment pins, before/after visual comparison, 4 knowledge YAML files
 - 003-parametric-cad: Implementation complete — Create mode with session-based OpenSCAD compilation, 4-check FDM printability validation, BOSL2 detection, knowledge content
 - 002-mesh-analysis-repair: Complete — mesh defect analysis, repair pipeline, knowledge content for Fix mode

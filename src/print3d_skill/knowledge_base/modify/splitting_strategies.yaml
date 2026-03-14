@@ -1,0 +1,59 @@
+metadata:
+  type: decision_tree
+  topic: Model Splitting Strategies
+  modes: [modify]
+  materials: []
+  printers: []
+  version: "1.0"
+
+data:
+  description: "Decision tree for choosing optimal split planes and strategies"
+  when_to_split:
+    - reason: "Model exceeds print bed dimensions"
+      action: "Split along the axis where the model exceeds the bed"
+      bed_sizes:
+        - name: "Standard FDM (Ender 3, Prusa MK3)"
+          dimensions_mm: [220, 220, 250]
+        - name: "Large FDM (CR-10, Voron 2.4)"
+          dimensions_mm: [300, 300, 400]
+    - reason: "Different parts need different materials or colors"
+      action: "Split at the material boundary"
+    - reason: "Overhangs require supports that would damage the surface"
+      action: "Split so each part can print with minimal supports"
+    - reason: "Part orientation is suboptimal for strength"
+      action: "Split and reorient each piece for optimal layer direction"
+
+  optimal_cut_plane:
+    prefer:
+      - "Flat, uniform cross-sections (avoids thin walls at the cut)"
+      - "Areas with natural visual seam lines (panel edges, trim lines)"
+      - "Cross-sections that maximize contact area for stronger glue joints"
+      - "Planes perpendicular to the longest axis (simplest alignment)"
+    avoid:
+      - "Cutting through thin features (walls < 2mm at the boundary)"
+      - "Cutting through holes or channels (creates partial features)"
+      - "Cutting at sharp angles to the model surface (creates thin wedges)"
+      - "Cutting through areas with fine detail or texture"
+
+  minimum_wall_thickness:
+    rule: "Wall thickness at the cut boundary must be at least 2x pin diameter"
+    example: "For 4mm pins, minimum wall thickness at cut is 8mm"
+    rationale: "Thin walls around alignment holes crack during assembly"
+
+  alignment_feature_selection:
+    pins:
+      use_when: "Standard flat cuts where parts align perpendicularly"
+      advantages: ["Simple to print", "Easy to assemble", "Reliable alignment"]
+      limitations: ["Only resists one axis of misalignment"]
+    dovetails:
+      use_when: "Parts need resistance to shear loads (sliding apart)"
+      advantages: ["Resists sliding", "Self-centering"]
+      limitations: ["More complex geometry", "Tighter tolerances needed"]
+      note: "Not yet implemented in this version"
+
+  assembly_tips:
+    - "Number each part and mark the mating surface before separating"
+    - "Test-fit parts dry before applying adhesive"
+    - "Use CA (super glue) for PLA, epoxy for PETG/ABS"
+    - "Apply thin layer of adhesive, press firmly, hold for 30 seconds"
+    - "Sand mating surfaces lightly for better adhesive bonding"

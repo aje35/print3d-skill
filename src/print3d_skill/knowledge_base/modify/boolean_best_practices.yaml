@@ -1,0 +1,61 @@
+metadata:
+  type: design_rules
+  topic: Boolean Operation Best Practices
+  modes: [modify]
+  materials: []
+  printers: []
+  version: "1.0"
+
+data:
+  description: "Best practices for boolean operations on 3D meshes"
+  rules:
+    input_preparation:
+      - rule: "Always repair non-manifold meshes before boolean operations"
+        rationale: "Boolean engines require watertight input for correct results"
+        action: "Run analyze_mesh() and repair_mesh() if defects found"
+      - rule: "Verify both operands are watertight before proceeding"
+        rationale: "Non-watertight meshes produce unpredictable boolean results"
+        action: "Check mesh.is_watertight before boolean call"
+      - rule: "Ensure tool mesh fully penetrates target for difference ops"
+        rationale: "Partial penetration creates thin walls and artifacts"
+        action: "Extend tool mesh dimensions beyond target bounds"
+
+    operation_selection:
+      - operation: "union"
+        use_when: "Combining separate parts into one printable model"
+        examples:
+          - "Merging a handle onto a cup"
+          - "Joining two halves of a symmetrical part"
+        pitfalls:
+          - "Internal faces remain if meshes overlap — clean manifold result"
+      - operation: "difference"
+        use_when: "Cutting holes, channels, engravings, or recesses"
+        examples:
+          - "Drilling screw holes through a bracket"
+          - "Engraving text onto a surface"
+          - "Creating cable routing channels"
+        pitfalls:
+          - "Tool must extend fully through target or empty result occurs"
+          - "Very thin tool walls (<0.4mm) may not slice correctly"
+      - operation: "intersection"
+        use_when: "Extracting only the overlapping region of two shapes"
+        examples:
+          - "Finding the common volume between two parts"
+          - "Creating a mold negative from an existing shape"
+        pitfalls:
+          - "Returns empty mesh if shapes don't overlap"
+          - "Small intersection volumes may be unprintable"
+
+    common_failure_modes:
+      - failure: "Empty result from boolean intersection"
+        cause: "Operand meshes do not overlap in 3D space"
+        solution: "Verify mesh positions and bounding boxes overlap before operation"
+      - failure: "Non-manifold edges after boolean"
+        cause: "Co-planar faces between operands create degenerate geometry"
+        solution: "Offset tool mesh by 0.01mm to avoid co-planar faces"
+      - failure: "Inverted normals after boolean difference"
+        cause: "Tool mesh normals point inward instead of outward"
+        solution: "Fix normals on tool mesh before boolean: mesh.fix_normals()"
+      - failure: "Very slow boolean operation"
+        cause: "High poly count on one or both operands"
+        solution: "Simplify meshes to <50K faces before boolean if possible"
