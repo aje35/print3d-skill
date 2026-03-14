@@ -1,0 +1,26 @@
+metadata:
+  type: material_properties
+  topic: pla_print_settings
+  modes: []
+  materials: [PLA]
+  printers: []
+  version: "1.0"
+
+data:
+  description: "PLA printing temperature and speed ranges"
+  material: PLA
+  properties:
+    nozzle_temp_min_c: 190
+    nozzle_temp_max_c: 220
+    nozzle_temp_recommended_c: 205
+    bed_temp_min_c: 50
+    bed_temp_max_c: 70
+    bed_temp_recommended_c: 60
+    print_speed_min_mm_s: 30
+    print_speed_max_mm_s: 80
+    print_speed_recommended_mm_s: 50
+    retraction_distance_mm: 1.0
+    retraction_speed_mm_s: 45
+    cooling_fan_percent: 100
+    shrinkage_percent: 0.4
+    density_g_cm3: 1.24

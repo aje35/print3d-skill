@@ -1,0 +1,31 @@
+metadata:
+  type: tolerance_table
+  topic: press_fit_clearances
+  modes: [create, modify]
+  materials: [PLA, PETG, ABS]
+  printers: []
+  version: "1.0"
+
+data:
+  description: "Clearance values for press-fit joints by material"
+  entries:
+    - joint_type: press_fit
+      material: PLA
+      clearance_mm: 0.1
+      notes: "PLA shrinks 0.3-0.5%. Use tighter fit."
+    - joint_type: press_fit
+      material: PETG
+      clearance_mm: 0.15
+      notes: "PETG is more flexible. Slightly looser fit works."
+    - joint_type: press_fit
+      material: ABS
+      clearance_mm: 0.12
+      notes: "ABS shrinks 0.5-0.7%. Account for warping."
+    - joint_type: snap_fit
+      material: PLA
+      clearance_mm: 0.2
+      notes: "PLA is brittle. Use generous clearance."
+    - joint_type: snap_fit
+      material: PETG
+      clearance_mm: 0.15
+      notes: "PETG flex makes snap fits reliable."
