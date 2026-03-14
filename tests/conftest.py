@@ -98,3 +98,159 @@ def sample_scad(fixtures_dir: Path) -> Path:
             'cube([20, 20, 20], center=true);\n'
         )
     return path
+
+
+@pytest.fixture(scope="session")
+def mesh_with_holes(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    """Generate a sphere mesh with faces removed to create boundary edges (holes)."""
+    mesh = trimesh.creation.icosphere(subdivisions=2)
+    faces = np.delete(mesh.faces, [0, 1, 2, 3], axis=0)
+    normals = np.delete(mesh.face_normals, [0, 1, 2, 3], axis=0)
+    mesh_holed = trimesh.Trimesh(
+        vertices=mesh.vertices,
+        faces=faces,
+        face_normals=normals,
+        process=False,
+    )
+    path = tmp_path_factory.mktemp("meshes") / "mesh_with_holes.stl"
+    mesh_holed.export(str(path), file_type="stl")
+    return path
+
+
+@pytest.fixture(scope="session")
+def mesh_with_bad_normals(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    """Generate a box mesh with ~30% of face windings flipped."""
+    mesh = trimesh.creation.box(extents=[20, 20, 20])
+    faces = mesh.faces.copy()
+    num_to_flip = max(1, int(len(faces) * 0.3))
+    rng = np.random.default_rng(42)
+    flip_indices = rng.choice(len(faces), size=num_to_flip, replace=False)
+    for idx in flip_indices:
+        faces[idx] = [faces[idx][0], faces[idx][2], faces[idx][1]]
+    mesh_bad = trimesh.Trimesh(
+        vertices=mesh.vertices, faces=faces, process=False
+    )
+    path = tmp_path_factory.mktemp("meshes") / "mesh_with_bad_normals.stl"
+    mesh_bad.export(str(path), file_type="stl")
+    return path
+
+
+@pytest.fixture(scope="session")
+def mesh_with_duplicate_vertices(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> Path:
+    """Generate a box mesh with near-duplicate vertices (within merge tolerance)."""
+    mesh = trimesh.creation.box(extents=[20, 20, 20])
+    verts = mesh.vertices.copy()
+    faces = mesh.faces.copy()
+    num_to_dup = min(4, len(verts))
+    dup_verts = verts[:num_to_dup] + 1e-9
+    new_indices_start = len(verts)
+    verts = np.vstack([verts, dup_verts])
+    # Remap some faces to reference the duplicated vertices
+    for i in range(min(num_to_dup, len(faces))):
+        for j in range(3):
+            if faces[i][j] < num_to_dup:
+                faces[i][j] = new_indices_start + faces[i][j]
+    mesh_dup = trimesh.Trimesh(vertices=verts, faces=faces, process=False)
+    path = tmp_path_factory.mktemp("meshes") / "mesh_with_duplicate_vertices.stl"
+    mesh_dup.export(str(path), file_type="stl")
+    return path
+
+
+@pytest.fixture(scope="session")
+def mesh_with_degenerate_faces(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> Path:
+    """Generate a box mesh with appended zero-area (degenerate) faces."""
+    mesh = trimesh.creation.box(extents=[20, 20, 20])
+    verts = mesh.vertices.copy()
+    faces = mesh.faces.copy()
+    # Append degenerate faces where all three vertices are the same point
+    degen_faces = np.array([[0, 0, 0], [1, 1, 1], [2, 2, 2]])
+    faces = np.vstack([faces, degen_faces])
+    mesh_degen = trimesh.Trimesh(vertices=verts, faces=faces, process=False)
+    path = tmp_path_factory.mktemp("meshes") / "mesh_with_degenerate_faces.stl"
+    mesh_degen.export(str(path), file_type="stl")
+    return path
+
+
+@pytest.fixture(scope="session")
+def mesh_with_duplicate_faces(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> Path:
+    """Generate a box mesh with some faces duplicated."""
+    mesh = trimesh.creation.box(extents=[20, 20, 20])
+    verts = mesh.vertices.copy()
+    faces = mesh.faces.copy()
+    # Duplicate the first 4 faces
+    dup_faces = faces[:4].copy()
+    faces = np.vstack([faces, dup_faces])
+    mesh_dupf = trimesh.Trimesh(vertices=verts, faces=faces, process=False)
+    path = tmp_path_factory.mktemp("meshes") / "mesh_with_duplicate_faces.stl"
+    mesh_dupf.export(str(path), file_type="stl")
+    return path
+
+
+@pytest.fixture(scope="session")
+def mesh_non_manifold(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    """Generate a non-manifold mesh (an edge shared by 3 faces)."""
+    mesh = trimesh.creation.box(extents=[20, 20, 20])
+    verts = mesh.vertices.copy()
+    faces = mesh.faces.copy()
+    # Add a new vertex offset from the mesh
+    new_vertex = np.array([[0.0, 0.0, 15.0]])
+    new_vert_idx = len(verts)
+    verts = np.vstack([verts, new_vertex])
+    # Create a triangle sharing an existing edge (vertices 0-1) with a new point,
+    # making that edge shared by 3 faces (non-manifold).
+    extra_face = np.array([[faces[0][0], faces[0][1], new_vert_idx]])
+    faces = np.vstack([faces, extra_face])
+    mesh_nm = trimesh.Trimesh(vertices=verts, faces=faces, process=False)
+    path = tmp_path_factory.mktemp("meshes") / "mesh_non_manifold.stl"
+    mesh_nm.export(str(path), file_type="stl")
+    return path
+
+
+@pytest.fixture(scope="session")
+def mesh_multi_body(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    """Generate a mesh with two separate, non-connected bodies."""
+    box_a = trimesh.creation.box(extents=[10, 10, 10])
+    box_b = trimesh.creation.box(extents=[10, 10, 10])
+    box_b.apply_translation([30, 30, 30])
+    combined = trimesh.util.concatenate([box_a, box_b])
+    path = tmp_path_factory.mktemp("meshes") / "mesh_multi_body.stl"
+    combined.export(str(path), file_type="stl")
+    return path
+
+
+@pytest.fixture(scope="session")
+def mesh_self_intersecting(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> Path:
+    """Generate a self-intersecting mesh from two overlapping boxes."""
+    box_a = trimesh.creation.box(extents=[20, 20, 20])
+    box_b = trimesh.creation.box(extents=[20, 20, 20])
+    box_b.apply_translation([10, 10, 10])  # Overlap by half
+    combined = trimesh.util.concatenate([box_a, box_b])
+    path = tmp_path_factory.mktemp("meshes") / "mesh_self_intersecting.stl"
+    combined.export(str(path), file_type="stl")
+    return path
+
+
+@pytest.fixture(scope="session")
+def clean_mesh(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    """Generate a known-good watertight box mesh."""
+    mesh = trimesh.creation.box(extents=[20, 20, 20])
+    path = tmp_path_factory.mktemp("meshes") / "clean.stl"
+    mesh.export(str(path), file_type="stl")
+    return path
+
+
+@pytest.fixture(scope="session")
+def mesh_ply(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    """Generate a simple mesh in PLY format for format testing."""
+    mesh = trimesh.creation.box(extents=[20, 20, 20])
+    path = tmp_path_factory.mktemp("meshes") / "mesh.ply"
+    mesh.export(str(path), file_type="ply")
+    return path

@@ -3,7 +3,7 @@
 ## Active Technologies
 
 - Python 3.10+ (src layout, PEP 621)
-- trimesh (mesh I/O), manifold3d (boolean CSG), numpy, matplotlib (Agg), Pillow, PyYAML
+- trimesh (mesh I/O, analysis, repair), manifold3d (boolean CSG), numpy, matplotlib (Agg), Pillow, PyYAML
 - OpenSCAD CLI (extended tier, optional)
 
 ## Project Structure
@@ -73,3 +73,6 @@ When making changes, update the relevant docs:
 
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->
+
+## Recent Changes
+- 002-mesh-analysis-repair: Planning phase — mesh defect analysis, repair pipeline, knowledge content for Fix mode

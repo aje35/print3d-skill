@@ -1,0 +1,115 @@
+metadata:
+  type: decision_tree
+  topic: Mesh Repair Decision Tree
+  modes: [fix]
+  materials: []
+  printers: []
+  version: "1.0"
+
+data:
+  description: "Decision tree mapping mesh defect symptoms to root causes and repair strategies"
+  nodes:
+    non_manifold:
+      defect: "Non-manifold edges or vertices"
+      symptoms:
+        - "Slicer reports non-manifold edges"
+        - "Edges shared by more than two faces"
+        - "Vertices connecting otherwise separate shells"
+      causes:
+        - "Bad boolean operations left shared interior faces"
+        - "Mesh editing errors (extruding without merging)"
+        - "Duplicate overlapping geometry from copy-paste"
+      repair:
+        - step: "Merge vertices within tolerance"
+          tool: "mesh.merge_vertices()"
+          notes: "Use a tolerance of 1e-8 to avoid collapsing intentional geometry"
+        - step: "Remove problematic faces"
+          tool: "mesh.remove_degenerate_faces()"
+          notes: "Delete faces with zero area or edges shared by 3+ faces"
+        - step: "Validate manifold status"
+          tool: "mesh.is_watertight"
+          notes: "Re-check after each repair step"
+
+    holes:
+      defect: "Holes and boundary edges"
+      symptoms:
+        - "Mesh is not watertight"
+        - "Visible gaps in the surface"
+        - "Boundary edges detected (edges with only one adjacent face)"
+      causes:
+        - "Incomplete mesh from partial modeling"
+        - "Boolean operation remnants leaving open boundaries"
+        - "Deleted faces not replaced during editing"
+      repair:
+        - step: "Fill holes with fan triangulation"
+          tool: "trimesh.repair.fill_holes()"
+          notes: "Works well for small, roughly planar holes"
+        - step: "Manual hole filling for complex boundaries"
+          tool: "trimesh.repair.fill_holes() with hole_size limit"
+          notes: "Set a max hole size to avoid filling intentional openings"
+        - step: "Re-check watertightness"
+          tool: "mesh.is_watertight"
+          notes: "Confirm all boundary edges have been resolved"
+
+    inconsistent_normals:
+      defect: "Inconsistent face normals"
+      symptoms:
+        - "Faces appear inside-out in preview"
+        - "Slicer shows inverted surfaces or missing walls"
+        - "Mixed winding order across adjacent faces"
+      causes:
+        - "Mixed winding from importing geometry from different software"
+        - "Manual face creation with inconsistent vertex ordering"
+        - "Boolean operations that flip some face orientations"
+      repair:
+        - step: "Fix normals to consistent winding"
+          tool: "trimesh.repair.fix_normals()"
+          notes: "Attempts to make all normals face outward consistently"
+        - step: "Reconcile winding order"
+          tool: "trimesh.repair.fix_winding()"
+          notes: "Ensures all adjacent faces share consistent winding"
+        - step: "Verify normal consistency"
+          tool: "mesh.is_winding_consistent"
+          notes: "All faces should have outward-pointing normals"
+
+    self_intersecting:
+      defect: "Self-intersecting geometry"
+      symptoms:
+        - "Faces pass through other faces in the same mesh"
+        - "Slicer reports self-intersections"
+        - "Unexpected internal geometry in sliced layers"
+      causes:
+        - "Overlapping geometry from unresolved boolean unions"
+        - "Boolean operation failures leaving interpenetrating shells"
+        - "Scaled or deformed geometry pushing faces through each other"
+      repair:
+        - step: "Separate into individual shells"
+          tool: "mesh.split(only_watertight=False)"
+          notes: "Isolate overlapping components for individual repair"
+        - step: "Perform clean boolean union"
+          tool: "trimesh.boolean.union()"
+          notes: "Re-merge shells with a proper boolean to resolve intersections"
+        - step: "Manual editing if boolean fails"
+          tool: "Remove intersecting faces and re-bridge"
+          notes: "Last resort when automated boolean cannot resolve the overlap"
+
+    degenerate_faces:
+      defect: "Degenerate or zero-area faces"
+      symptoms:
+        - "Triangles with zero area or near-zero area"
+        - "Collapsed edges where two vertices occupy the same position"
+        - "Slicer warnings about invalid triangles"
+      causes:
+        - "Collapsed geometry from aggressive decimation"
+        - "Import artifacts from format conversion (e.g., STEP to STL)"
+        - "Vertices merged too aggressively during prior repair"
+      repair:
+        - step: "Remove degenerate faces"
+          tool: "mesh.remove_degenerate_faces()"
+          notes: "Removes faces with zero or near-zero area"
+        - step: "Merge duplicate vertices"
+          tool: "mesh.merge_vertices()"
+          notes: "Collapse vertices that are within floating-point tolerance"
+        - step: "Fill any resulting holes"
+          tool: "trimesh.repair.fill_holes()"
+          notes: "Removing degenerate faces may open small holes"

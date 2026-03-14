@@ -143,3 +143,123 @@ class TestReturnTypes:
         from print3d_skill.models.mesh import BoundingBox
 
         assert hasattr(BoundingBox, "__dataclass_fields__")
+
+
+class TestF2PublicFunctions:
+    """Verify F2 public functions are importable with correct signatures."""
+
+    def test_analyze_mesh_signature(self):
+        from print3d_skill import analyze_mesh
+
+        sig = inspect.signature(analyze_mesh)
+        params = list(sig.parameters.keys())
+        assert "mesh_path" in params
+        assert "config" in params
+
+    def test_repair_mesh_signature(self):
+        from print3d_skill import repair_mesh
+
+        sig = inspect.signature(repair_mesh)
+        params = list(sig.parameters.keys())
+        assert "mesh_path" in params
+        assert "output_path" in params
+        assert "config" in params
+
+    def test_export_mesh_signature(self):
+        from print3d_skill import export_mesh
+
+        sig = inspect.signature(export_mesh)
+        params = list(sig.parameters.keys())
+        assert "mesh_path" in params
+        assert "output_dir" in params
+        assert "formats" in params
+
+
+class TestF2Exceptions:
+    """Verify F2-specific exceptions exist and inherit from Print3DSkillError."""
+
+    @pytest.mark.parametrize("exc_name", [
+        "MeshAnalysisError", "RepairError", "ExportError",
+    ])
+    def test_f2_exception_inherits_from_base(self, exc_name):
+        from print3d_skill import exceptions
+        from print3d_skill.exceptions import Print3DSkillError
+
+        exc_class = getattr(exceptions, exc_name)
+        assert issubclass(exc_class, Print3DSkillError)
+
+
+class TestF2ReturnTypes:
+    """Verify F2 return types are importable dataclasses."""
+
+    def test_mesh_analysis_report(self):
+        from print3d_skill.models.analysis import MeshAnalysisReport
+
+        assert hasattr(MeshAnalysisReport, "__dataclass_fields__")
+
+    def test_repair_summary(self):
+        from print3d_skill.models.repair import RepairSummary
+
+        assert hasattr(RepairSummary, "__dataclass_fields__")
+
+    def test_repair_result(self):
+        from print3d_skill.models.repair import RepairResult
+
+        assert hasattr(RepairResult, "__dataclass_fields__")
+
+    def test_repair_config(self):
+        from print3d_skill.models.repair import RepairConfig
+
+        assert hasattr(RepairConfig, "__dataclass_fields__")
+
+    def test_export_result(self):
+        from print3d_skill.models.export import ExportResult
+
+        assert hasattr(ExportResult, "__dataclass_fields__")
+
+    def test_mesh_defect(self):
+        from print3d_skill.models.analysis import MeshDefect
+
+        assert hasattr(MeshDefect, "__dataclass_fields__")
+
+    def test_shell_analysis(self):
+        from print3d_skill.models.analysis import ShellAnalysis
+
+        assert hasattr(ShellAnalysis, "__dataclass_fields__")
+
+
+class TestF2Enums:
+    """Verify F2 enums have the correct number of members."""
+
+    def test_defect_type_has_10_values(self):
+        from print3d_skill.models.analysis import DefectType
+
+        assert len(DefectType) == 10
+
+    def test_repair_strategy_has_6_values(self):
+        from print3d_skill.models.repair import RepairStrategy
+
+        assert len(RepairStrategy) == 6
+
+    def test_defect_severity_has_3_values(self):
+        from print3d_skill.models.analysis import DefectSeverity
+
+        assert len(DefectSeverity) == 3
+
+    def test_health_classification_has_3_values(self):
+        from print3d_skill.models.analysis import MeshHealthClassification
+
+        assert len(MeshHealthClassification) == 3
+
+
+class TestF2Idempotency:
+    """Verify repair_mesh on an already-clean mesh is a no-op."""
+
+    def test_repair_clean_mesh_is_noop(self, clean_mesh):
+        from print3d_skill import repair_mesh
+        from print3d_skill.models.repair import RepairConfig
+
+        summary = repair_mesh(str(clean_mesh), config=RepairConfig(render_previews=False))
+        assert summary.total_defects_found == 0
+        assert summary.total_defects_fixed == 0
+        assert len(summary.repairs) == 0
