@@ -16,6 +16,7 @@ class TrimeshProvider(ToolProvider):
     def detect(self) -> bool:
         try:
             import trimesh
+
             self._version = trimesh.__version__
             return True
         except ImportError:

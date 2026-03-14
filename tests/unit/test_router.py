@@ -12,7 +12,7 @@ from print3d_skill.exceptions import InvalidModeError
 
 
 class TestValidModes:
-    @pytest.mark.parametrize("mode", ["diagnose", "validate"])
+    @pytest.mark.parametrize("mode", ["diagnose"])
     def test_stub_mode_returns_not_implemented(self, mode):
         response = route(mode)
         assert response.mode == mode
@@ -39,6 +39,12 @@ class TestValidModes:
         assert response.mode == "create"
         assert response.status == "error"
         assert "description" in response.message
+
+    def test_validate_mode_returns_response(self, minimal_gcode_path):
+        """Validate mode is implemented — returns success for valid G-code."""
+        response = route("validate", gcode_path=str(minimal_gcode_path))
+        assert response.mode == "validate"
+        assert response.status == "success"
 
     @pytest.mark.parametrize("mode", ["create", "fix", "modify", "diagnose", "validate"])
     def test_stub_responses_include_mode_name(self, mode):

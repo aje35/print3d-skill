@@ -1,0 +1,57 @@
+;FLAVOR:Marlin
+;TIME:5400
+;Filament used: 5.432m
+;Layer height: 0.2
+;Generated with Cura_SteamEngine 5.6.0
+;MINX:10.0
+;MINY:10.0
+;MINZ:0.2
+;MAXX:105.0
+;MAXY:90.0
+;MAXZ:0.4
+
+M104 S210 ; set hotend temp
+M140 S60 ; set bed temp
+M190 S60 ; wait for bed temp
+M109 S210 ; wait for hotend temp
+G28 ; home all axes
+G1 Z5 F3000 ; lift nozzle
+
+;LAYER_COUNT:2
+;LAYER:0
+G1 Z0.2 F7200
+M106 S127 ; fan 50%
+;TYPE:WALL-OUTER
+G1 X10.0 Y10.0 F6000 ; travel
+G1 X105.0 Y10.0 E2.9 F1800 ; outer wall
+G1 X105.0 Y90.0 E5.4 F1800
+G1 X10.0 Y90.0 E7.9 F1800
+G1 X10.0 Y10.0 E10.4 F1800
+G1 E-1.0 F2700 ; retract
+G0 X50.0 Y40.0 F6000 ; travel
+G1 E1.0 F2700 ; unretract
+;TYPE:FILL
+G1 X70.0 Y40.0 E11.2 F3600 ; infill
+G1 X70.0 Y60.0 E12.0 F3600
+
+;LAYER:1
+G1 Z0.4 F7200
+M106 S255 ; fan 100%
+;TYPE:WALL-OUTER
+G1 X10.0 Y10.0 F6000
+G1 X105.0 Y10.0 E14.9 F1800
+G1 X105.0 Y90.0 E17.4 F1800
+G1 X10.0 Y90.0 E19.9 F1800
+G1 X10.0 Y10.0 E22.4 F1800
+G1 E-1.0 F2700 ; retract
+G0 X50.0 Y40.0 F6000
+G1 E1.0 F2700 ; unretract
+;TYPE:FILL
+G1 X70.0 Y40.0 E23.2 F3600
+G1 X70.0 Y60.0 E24.0 F3600
+
+M107 ; fan off
+M104 S0 ; hotend off
+M140 S0 ; bed off
+G28 X Y ; home X Y
+M84 ; disable motors

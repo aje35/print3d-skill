@@ -1,0 +1,29 @@
+metadata:
+  type: material_properties
+  topic: asa_print_settings
+  modes: [validate]
+  materials: [ASA]
+  printers: []
+  version: "1.0"
+
+data:
+  description: "ASA printing temperature, speed, and retraction settings for FDM validation"
+  material: ASA
+  properties:
+    hotend_temp_min_c: 240
+    hotend_temp_max_c: 260
+    hotend_temp_recommended_c: 250
+    bed_temp_min_c: 90
+    bed_temp_max_c: 110
+    bed_temp_recommended_c: 100
+    print_speed_min_mm_s: 30
+    print_speed_max_mm_s: 50
+    retraction_direct_drive_mm: 0.5-1.5
+    retraction_bowden_mm: 4-7
+    retraction_speed_mm_s: 40
+    requires_enclosure: true
+    requires_heated_bed: true
+    fan_speed_percent: 0-30
+    notes:
+      - "UV resistant alternative to ABS"
+      - "Requires enclosure"

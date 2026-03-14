@@ -15,7 +15,7 @@ F1  Core Infrastructure          ✓ Complete
  ├── F2  Mesh Analysis & Repair  ✓ Complete (Fix mode)
  ├── F3  Parametric CAD          ✓ Complete (Create mode)
  │    └── F4  Model Modification ✓ Complete (Modify mode)
- ├── F5  G-code & Slicing          Planned  (Validate mode + slicer/printer)
+ ├── F5  G-code & Slicing        ✓ Complete (Validate mode + slicer/printer)
  └── F6  Print Diagnosis           Planned  (Diagnose mode)
 
 Parallel opportunities:

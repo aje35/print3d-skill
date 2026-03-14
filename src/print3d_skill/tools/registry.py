@@ -63,8 +63,7 @@ class ToolRegistry:
                     provider_name=provider.name if provider.is_available else None,
                     is_available=provider.is_available,
                     install_instructions=(
-                        None if provider.is_available
-                        else provider.install_instructions
+                        None if provider.is_available else provider.install_instructions
                     ),
                 )
             )

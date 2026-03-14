@@ -12,6 +12,7 @@ VALID_KNOWLEDGE_TYPES = (
     "design_rules",
     "design_pattern",
     "lookup_table",
+    "printer_capabilities",
 )
 
 

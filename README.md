@@ -69,6 +69,19 @@ print(result.output_mesh_paths)  # ["vase_bottom.stl", "vase_top.stl"]
 ```
 
 ```python
+# Parse and validate G-code before printing
+from print3d_skill import parse_gcode, validate_gcode
+
+analysis = parse_gcode("model.gcode")
+print(f"Slicer: {analysis.slicer}, Layers: {analysis.layer_count}")
+
+result = validate_gcode("model.gcode", material="PLA")
+print(f"Validation: {result.status.value}")
+for rec in result.recommendations:
+    print(f"  - {rec}")
+```
+
+```python
 # Discover available tools
 from print3d_skill import list_capabilities
 
@@ -79,7 +92,7 @@ for cap in list_capabilities():
 
 ## Current Status
 
-Four features are complete, covering the full create/fix/modify pipeline:
+Five features are complete, covering the full create/fix/modify/validate pipeline:
 
 ### Roadmap
 
@@ -89,7 +102,7 @@ Four features are complete, covering the full create/fix/modify pipeline:
 | F2: Mesh Analysis & Repair | Fix | **Complete** |
 | F3: Parametric CAD | Create | **Complete** |
 | F4: Model Modification | Modify | **Complete** |
-| F5: G-code & Slicing | Validate | Planned |
+| F5: G-code & Slicing | Validate | **Complete** |
 | F6: Print Diagnosis | Diagnose | Planned |
 
 See [docs/feature-chunking-strategy.md](docs/feature-chunking-strategy.md) for the full breakdown.
@@ -100,6 +113,9 @@ See [docs/feature-chunking-strategy.md](docs/feature-chunking-strategy.md) for t
 src/print3d_skill/
 ├── create/             # Create mode: parametric CAD via OpenSCAD
 ├── modify/             # Modify mode: boolean, scale, combine, text, split
+├── validate/           # Validate mode: G-code parser, validation engine, profiles
+├── slicing/            # Slicer CLI integration (PrusaSlicer, OrcaSlicer)
+├── printing/           # Printer control (OctoPrint, Moonraker, Bambu Lab)
 ├── analysis/           # Mesh defect detection (10 detectors)
 ├── repair/             # Mesh repair pipeline (6 strategies)
 ├── export/             # Format-specific mesh exporters
@@ -122,7 +138,9 @@ src/print3d_skill/
 
 **Extended** (optional system packages):
 - OpenSCAD — parametric CAD compilation (`brew install openscad`)
-- PrusaSlicer/OrcaSlicer CLI — slicing (future)
+- PrusaSlicer/OrcaSlicer CLI — G-code slicing
+- `requests` — OctoPrint/Moonraker printer control (`pip install requests`)
+- `paho-mqtt` — Bambu Lab printer control (`pip install paho-mqtt`)
 
 ## Development
 

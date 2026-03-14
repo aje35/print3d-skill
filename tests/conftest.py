@@ -330,3 +330,101 @@ def second_box_stl(tmp_path_factory: pytest.TempPathFactory) -> Path:
     path = tmp_path_factory.mktemp("meshes") / "second_box.stl"
     mesh.export(str(path), file_type="stl")
     return path
+
+
+# --- Validate mode fixtures ---
+
+
+@pytest.fixture(scope="session")
+def gcode_fixtures_dir() -> Path:
+    """Path to the tests/fixtures/gcode directory."""
+    return Path(__file__).parent / "fixtures" / "gcode"
+
+
+@pytest.fixture
+def minimal_gcode_path(tmp_path: Path) -> Path:
+    """Write a small valid G-code string to tmp_path."""
+    content = (
+        "; minimal gcode\n"
+        "G28\n"
+        "M104 S200\n"
+        "M140 S60\n"
+        "M109 S200\n"
+        "M190 S60\n"
+        "G1 Z0.2 F3000\n"
+        "G1 X10 Y10 E1.0 F1200\n"
+        "G1 X50 Y50 E3.0 F1500\n"
+        "M106 S255\n"
+        "G1 X50 Y10 E5.0\n"
+        "M107\n"
+        "M84\n"
+    )
+    path = tmp_path / "minimal.gcode"
+    path.write_text(content)
+    return path
+
+
+@pytest.fixture(scope="session")
+def prusaslicer_gcode_path(gcode_fixtures_dir: Path) -> Path:
+    """Path to PrusaSlicer fixture G-code."""
+    return gcode_fixtures_dir / "prusaslicer_benchy.gcode"
+
+
+@pytest.fixture(scope="session")
+def bambustudio_gcode_path(gcode_fixtures_dir: Path) -> Path:
+    """Path to Bambu Studio fixture G-code."""
+    return gcode_fixtures_dir / "bambustudio_benchy.gcode"
+
+
+@pytest.fixture(scope="session")
+def orcaslicer_gcode_path(gcode_fixtures_dir: Path) -> Path:
+    """Path to OrcaSlicer fixture G-code."""
+    return gcode_fixtures_dir / "orcaslicer_benchy.gcode"
+
+
+@pytest.fixture(scope="session")
+def cura_gcode_path(gcode_fixtures_dir: Path) -> Path:
+    """Path to Cura fixture G-code."""
+    return gcode_fixtures_dir / "cura_benchy.gcode"
+
+
+@pytest.fixture
+def pla_material_profile():
+    """MaterialProfile dataclass instance for PLA."""
+    from print3d_skill.models.validate import MaterialProfile
+
+    return MaterialProfile(
+        name="PLA",
+        hotend_temp_min_c=190,
+        hotend_temp_max_c=220,
+        bed_temp_min_c=50,
+        bed_temp_max_c=70,
+        speed_min_mm_s=30,
+        speed_max_mm_s=80,
+        retraction_direct_drive_mm=1.0,
+        retraction_bowden_mm=5.0,
+        retraction_speed_mm_s=45,
+        requires_enclosure=False,
+        requires_heated_bed=False,
+        fan_speed_percent=100,
+        notes=["Good all-around material"],
+    )
+
+
+@pytest.fixture
+def ender3_printer_profile():
+    """PrinterProfile dataclass instance for Ender 3 (bowden, 220x220x250)."""
+    from print3d_skill.models.validate import ExtruderType, PrinterProfile
+
+    return PrinterProfile(
+        name="ender3_v2",
+        build_volume_x_mm=220,
+        build_volume_y_mm=220,
+        build_volume_z_mm=250,
+        max_hotend_temp_c=260,
+        max_bed_temp_c=110,
+        extruder_type=ExtruderType.BOWDEN,
+        has_heated_bed=True,
+        has_enclosure=False,
+        notes=["Popular entry-level printer"],
+    )

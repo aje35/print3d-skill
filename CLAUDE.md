@@ -5,6 +5,8 @@
 - Python 3.10+ (src layout, PEP 621)
 - trimesh (mesh I/O, analysis, repair, ray casting for printability, primitives, splitting), manifold3d (boolean CSG), numpy, matplotlib (Agg), Pillow, PyYAML
 - OpenSCAD CLI (extended tier, optional), BOSL2 library (optional)
+- requests (extended tier, optional — OctoPrint/Moonraker printer control)
+- paho-mqtt (extended tier, optional — Bambu Lab printer control)
 
 ## Project Structure
 
@@ -12,6 +14,9 @@
 src/print3d_skill/          # Main package (src layout)
   create/                   # Create mode: session, compiler, printability, BOSL2
   modify/                   # Modify mode: boolean, scale, combine, text, split
+  validate/                 # Validate mode: G-code parser, validator, profiles
+  slicing/                  # Slicer CLI integration (PrusaSlicer, OrcaSlicer)
+  printing/                 # Printer control backends (OctoPrint, Moonraker, Bambu)
   analysis/                 # Mesh defect detection
   repair/                   # Mesh repair pipeline
   export/                   # Format-specific mesh exporters
@@ -21,6 +26,7 @@ src/print3d_skill/          # Main package (src layout)
   knowledge_base/           # Bundled YAML knowledge files (package data)
     create/                 # Create mode knowledge (tolerances, patterns, BOSL2)
     modify/                 # Modify mode knowledge (booleans, engraving, pins, splitting)
+    validate/               # Validate mode knowledge (materials, printers, slicer mappings)
   modes/                    # Workflow handlers (5 modes)
   models/                   # Dataclasses
   router.py                 # Mode dispatch
@@ -36,13 +42,13 @@ specs/                      # Feature specs (spec-kit pipeline)
 
 ```bash
 pip install -e ".[dev]"     # Install in dev mode
-pytest                      # Run tests (341 passing)
+pytest                      # Run tests (704 total, 689 passing)
 pytest --cov=print3d_skill  # Run tests with coverage
 ruff check src/ tests/      # Lint
 ruff format src/ tests/     # Format
 ```
 
-## Public API (14 functions)
+## Public API (18 functions)
 
 - `render_preview(mesh_path, output_path)` — multi-angle PNG preview
 - `get_capability(name)` — capability-based tool lookup
@@ -58,6 +64,11 @@ ruff format src/ tests/     # Format
 - `validate_printability(mesh_path, config)` — FDM printability validation (4 checks)
 - `modify_mesh(mesh_path, operation, **params)` — standalone mesh modification (boolean, scale, combine, engrave, split)
 - `start_session / submit_iteration / export_design` — session-based create pipeline (via print3d_skill.create)
+- `parse_gcode(gcode_path)` — G-code parsing into structured GcodeAnalysis
+- `validate_gcode(gcode_path, material, printer)` — G-code validation against profiles (pass/warn/fail)
+- `slice_model(model_path, output_path, slicer, ...)` — slicer CLI integration (extended tier)
+- `list_printers()` — discover configured printers and query status (extended tier)
+- `submit_print(gcode_path, printer_name, material, ...)` — validate-then-print submission (extended tier)
 
 ## Code Style
 
@@ -87,11 +98,11 @@ When making changes, update the relevant docs:
 - F2: Mesh Analysis & Repair (10 detectors, 6 repair strategies, health scoring, export)
 - F3: Parametric CAD (OpenSCAD compilation, session-based create pipeline, BOSL2, printability)
 - F4: Model Modification (boolean CSG, scaling with feature warnings, combining, text engraving, splitting with alignment pins, before/after comparison)
+- F5: G-code Validation & Slicing (G-code parser for 4 slicers, settings validation, slicer CLI wrapping, printer control for OctoPrint/Moonraker/Bambu, 9 knowledge YAML files)
 
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->
 
 ## Recent Changes
+- 005-gcode-validation-slicing: Implementation complete — Validate mode with G-code parser (PrusaSlicer, Bambu Studio, OrcaSlicer, Cura), settings validation against material/printer profiles (pass/warn/fail), slicer CLI wrapping (PrusaSlicer, OrcaSlicer), printer control backends (OctoPrint REST, Moonraker REST, Bambu MQTT), validate-before-print enforcement, 9 knowledge YAML files (7 materials + printer profiles + slicer mappings)
 - 004-model-modification: Implementation complete — Modify mode with boolean CSG (manifold3d), uniform/non-uniform/targeted scaling, feature detection for screw holes, model combining with alignment, text engraving/embossing (OpenSCAD), plane-based splitting with alignment pins, before/after visual comparison, 4 knowledge YAML files
-- 003-parametric-cad: Implementation complete — Create mode with session-based OpenSCAD compilation, 4-check FDM printability validation, BOSL2 detection, knowledge content
-- 002-mesh-analysis-repair: Complete — mesh defect analysis, repair pipeline, knowledge content for Fix mode
