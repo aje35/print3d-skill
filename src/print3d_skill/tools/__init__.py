@@ -14,7 +14,9 @@ from print3d_skill.models.mode import SystemInfo
 from print3d_skill.tools.base import ToolProvider
 from print3d_skill.tools.manifold_tools import ManifoldProvider
 from print3d_skill.tools.openscad import OpenSCADProvider
+from print3d_skill.tools.printer_tools import PrinterProvider
 from print3d_skill.tools.registry import ToolRegistry
+from print3d_skill.tools.slicer_tools import SlicerProvider
 from print3d_skill.tools.trimesh_tools import TrimeshProvider
 
 # Default registry with all known providers
@@ -22,6 +24,8 @@ _registry = ToolRegistry()
 _registry.register(TrimeshProvider())
 _registry.register(ManifoldProvider())
 _registry.register(OpenSCADProvider())
+_registry.register(SlicerProvider())
+_registry.register(PrinterProvider())
 
 
 def get_capability(name: str) -> ToolProvider:

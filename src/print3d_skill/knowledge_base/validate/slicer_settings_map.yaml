@@ -1,0 +1,84 @@
+metadata:
+  type: lookup_table
+  topic: slicer_settings_mapping
+  modes: [validate]
+  materials: []
+  printers: []
+  version: "1.0"
+
+data:
+  description: "Mapping of slicer-specific comment key names to canonical parameter names"
+  mappings:
+    hotend_temp_c:
+      canonical: hotend_temp_c
+      prusaslicer: nozzle_temperature
+      bambustudio: nozzle_temperature
+      orcaslicer: nozzle_temperature
+      cura: material_print_temperature
+
+    bed_temp_c:
+      canonical: bed_temp_c
+      prusaslicer: bed_temperature
+      bambustudio: bed_temperature
+      orcaslicer: bed_temperature
+      cura: material_bed_temperature
+
+    layer_height_mm:
+      canonical: layer_height_mm
+      prusaslicer: layer_height
+      bambustudio: layer_height
+      orcaslicer: layer_height
+      cura: layer_height
+
+    print_speed_mm_s:
+      canonical: print_speed_mm_s
+      prusaslicer: perimeter_speed
+      bambustudio: outer_wall_speed
+      orcaslicer: outer_wall_speed
+      cura: speed_print
+
+    retraction_distance_mm:
+      canonical: retraction_distance_mm
+      prusaslicer: retract_length
+      bambustudio: retraction_length
+      orcaslicer: retraction_length
+      cura: retraction_amount
+
+    retraction_speed_mm_s:
+      canonical: retraction_speed_mm_s
+      prusaslicer: retract_speed
+      bambustudio: retraction_speed
+      orcaslicer: retraction_speed
+      cura: retraction_retract_speed
+
+    first_layer_height_mm:
+      canonical: first_layer_height_mm
+      prusaslicer: first_layer_height
+      bambustudio: initial_layer_print_height
+      orcaslicer: initial_layer_print_height
+      cura: layer_height_0
+
+    first_layer_speed_mm_s:
+      canonical: first_layer_speed_mm_s
+      prusaslicer: first_layer_speed
+      bambustudio: initial_layer_speed
+      orcaslicer: initial_layer_speed
+      cura: speed_layer_0
+
+  layer_change_markers:
+    prusaslicer: "; LAYER_CHANGE"
+    bambustudio: "; CHANGE_LAYER"
+    orcaslicer: "; CHANGE_LAYER"
+    cura: ";LAYER:"
+
+  estimated_time_patterns:
+    prusaslicer: "; estimated printing time (normal mode) = "
+    bambustudio: "; total estimated time: "
+    orcaslicer: "; total estimated time: "
+    cura: ";TIME:"
+
+  filament_used_patterns:
+    prusaslicer: "; filament used [mm] = "
+    bambustudio: "; filament used [mm] = "
+    orcaslicer: "; filament used [mm] = "
+    cura: ";Filament used: "

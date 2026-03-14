@@ -94,3 +94,49 @@ class DesignError(Print3DSkillError):
 
 class PrintabilityError(Print3DSkillError):
     """Raised when printability validation cannot be performed."""
+
+
+class GcodeParseError(Print3DSkillError):
+    """Raised when a G-code file is corrupted, empty, or cannot be parsed."""
+
+
+class SlicerError(Print3DSkillError):
+    """Raised when a slicer CLI returns a non-zero exit code.
+
+    Attributes:
+        slicer: The slicer that failed.
+        stderr: The slicer's stderr output.
+    """
+
+    def __init__(self, slicer: str, stderr: str = "", message: str = "") -> None:
+        self.slicer = slicer
+        self.stderr = stderr
+        msg = message or f"Slicer '{slicer}' failed"
+        if stderr:
+            msg += f": {stderr[:500]}"
+        super().__init__(msg)
+
+
+class ValidationError(Print3DSkillError):
+    """Raised when G-code fails validation with FAIL status.
+
+    Attributes:
+        validation_result: The full validation result that caused the failure.
+    """
+
+    def __init__(self, message: str, validation_result: object = None) -> None:
+        self.validation_result = validation_result
+        super().__init__(message)
+
+
+class PrinterError(Print3DSkillError):
+    """Raised when printer communication fails.
+
+    Attributes:
+        printer_name: Name of the printer that failed.
+    """
+
+    def __init__(self, printer_name: str, message: str = "") -> None:
+        self.printer_name = printer_name
+        msg = message or f"Printer '{printer_name}' communication failed"
+        super().__init__(msg)

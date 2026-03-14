@@ -1,0 +1,30 @@
+metadata:
+  type: material_properties
+  topic: composites_print_settings
+  modes: [validate]
+  materials: [composites, carbon_fiber, wood_fill]
+  printers: []
+  version: "1.0"
+
+data:
+  description: "Composite filament (carbon fiber, wood fill, etc.) printing temperature, speed, and retraction settings for FDM validation"
+  material: composites
+  properties:
+    hotend_temp_min_c: 200
+    hotend_temp_max_c: 250
+    hotend_temp_recommended_c: 220
+    bed_temp_min_c: 50
+    bed_temp_max_c: 70
+    bed_temp_recommended_c: 60
+    print_speed_min_mm_s: 20
+    print_speed_max_mm_s: 50
+    retraction_direct_drive_mm: 0.5-1.5
+    retraction_bowden_mm: 3-6
+    retraction_speed_mm_s: 40
+    requires_enclosure: false
+    requires_heated_bed: false
+    fan_speed_percent: 50-100
+    notes:
+      - "Requires hardened steel nozzle"
+      - "Abrasive - will wear brass nozzles quickly"
+      - "Use 0.5mm+ nozzle diameter"

@@ -16,6 +16,7 @@ class ManifoldProvider(ToolProvider):
     def detect(self) -> bool:
         try:
             import manifold3d
+
             self._version = getattr(manifold3d, "__version__", None)
             return True
         except ImportError:
