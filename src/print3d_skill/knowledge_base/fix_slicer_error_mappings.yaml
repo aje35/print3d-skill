@@ -1,0 +1,85 @@
+metadata:
+  type: lookup_table
+  topic: Slicer Error Message Mappings
+  modes: [fix]
+  materials: []
+  printers: []
+  version: "1.0"
+
+data:
+  description: "Maps common slicer error messages to underlying mesh defects and recommended fixes"
+  slicers:
+    - name: "Bambu Studio"
+      version_range: "1.x"
+      errors:
+        - message: "Non-manifold edges detected"
+          defect_type: non_manifold
+          description: "Mesh contains edges shared by more than two faces or edges with only one adjacent face"
+          recommended_fix:
+            - "Merge vertices within tolerance using mesh.merge_vertices()"
+            - "Remove duplicate or degenerate faces"
+            - "Run trimesh.repair.fill_holes() if boundary edges remain"
+        - message: "The model is not watertight"
+          defect_type: holes
+          description: "Mesh has open boundaries or gaps preventing solid interpretation"
+          recommended_fix:
+            - "Fill holes with trimesh.repair.fill_holes()"
+            - "Check for and remove internal floating geometry"
+            - "Verify mesh.is_watertight after repair"
+        - message: "Floating shells detected"
+          defect_type: disconnected_components
+          description: "Mesh contains small disconnected shells that may not print correctly"
+          recommended_fix:
+            - "Split mesh into components with mesh.split()"
+            - "Remove shells below a volume threshold"
+            - "Re-export as a single watertight mesh"
+
+    - name: "PrusaSlicer"
+      version_range: "2.x"
+      errors:
+        - message: "The model has invalid/self-intersecting mesh"
+          defect_type: self_intersecting
+          description: "Faces in the mesh pass through other faces causing ambiguous interior/exterior"
+          recommended_fix:
+            - "Separate overlapping shells with mesh.split()"
+            - "Perform a clean boolean union to resolve intersections"
+            - "If boolean fails, manually remove intersecting faces and re-bridge"
+        - message: "The object has manifold errors"
+          defect_type: non_manifold
+          description: "Generic manifold error covering non-manifold edges, vertices, or open boundaries"
+          recommended_fix:
+            - "Run full repair pipeline: merge vertices, fix normals, fill holes"
+            - "Check for non-manifold edges and remove problematic faces"
+            - "Validate with mesh.is_watertight after repair"
+        - message: "Zero volume mesh"
+          defect_type: degenerate_faces
+          description: "Mesh has zero or near-zero volume, often from collapsed or degenerate geometry"
+          recommended_fix:
+            - "Remove degenerate faces with mesh.remove_degenerate_faces()"
+            - "Check for flipped normals causing negative volume"
+            - "Verify mesh has non-zero volume with mesh.volume"
+
+    - name: "Cura"
+      version_range: "5.x"
+      errors:
+        - message: "No mesh found"
+          defect_type: empty_mesh
+          description: "File contains no valid geometry or all faces are degenerate"
+          recommended_fix:
+            - "Verify the file is not empty or corrupted"
+            - "Re-export from source application with correct units and settings"
+            - "Check for degenerate faces and remove them"
+        - message: "Model has non-manifold edges"
+          defect_type: non_manifold
+          description: "Edges in the mesh are shared by more than two faces or have only one adjacent face"
+          recommended_fix:
+            - "Merge overlapping vertices with mesh.merge_vertices()"
+            - "Remove faces causing non-manifold conditions"
+            - "Fill resulting holes with trimesh.repair.fill_holes()"
+        - message: "Model is not printable"
+          defect_type: multiple
+          description: "Catch-all error indicating one or more issues prevent slicing"
+          recommended_fix:
+            - "Run full diagnostic: check manifold, watertight, normals, intersections"
+            - "Apply repairs in order: merge vertices, fix normals, fill holes"
+            - "Re-validate after each repair step before re-slicing"

@@ -74,3 +74,15 @@ class InvalidModeError(Print3DSkillError):
 
 class KnowledgeSchemaError(Print3DSkillError):
     """Raised when a knowledge file fails schema validation."""
+
+
+class MeshAnalysisError(Print3DSkillError):
+    """Raised when mesh analysis fails (e.g., no valid geometry)."""
+
+
+class RepairError(Print3DSkillError):
+    """Raised when the repair pipeline encounters an unrecoverable error."""
+
+
+class ExportError(Print3DSkillError):
+    """Raised when mesh export fails (e.g., unable to write output file)."""

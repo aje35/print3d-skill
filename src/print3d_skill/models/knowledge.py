@@ -10,6 +10,7 @@ VALID_KNOWLEDGE_TYPES = (
     "material_properties",
     "decision_tree",
     "design_rules",
+    "lookup_table",
 )
 
 

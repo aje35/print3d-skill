@@ -22,7 +22,7 @@ from print3d_skill.exceptions import MeshLoadError, UnsupportedFormatError
 from print3d_skill.models.mesh import BoundingBox, MeshFile
 from print3d_skill.models.preview import ViewAngle
 
-SUPPORTED_FORMATS = {"stl", "3mf", "obj"}
+SUPPORTED_FORMATS = {"stl", "3mf", "obj", "ply"}
 
 
 def _detect_format(path: str) -> str:
