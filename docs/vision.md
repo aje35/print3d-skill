@@ -108,9 +108,12 @@ This project grew out of a mesh repair pipeline (`repair_topo_stl.py`) built to 
 
 ## Status
 
-Pre-development. Currently conducting deep research across four areas:
+**F1: Core Infrastructure** — Complete. Rendering pipeline, tool orchestration, knowledge system, and skill router are implemented and tested. The package is pip-installable with 73 passing tests.
 
-1. Visual feedback architecture — how the agent renders and inspects 3D previews
-2. Skill specification format — portable structure that works across agent frameworks
-3. Open-source toolchain integration — which tools to wrap and how they compose
-4. User pain points and workflows — what real 3D printing users actually need
+**Next**: F2 (Mesh Analysis & Repair) to enable Fix mode, or F3 (Parametric CAD) to enable Create mode. See [feature-chunking-strategy.md](feature-chunking-strategy.md) for the full roadmap.
+
+Research (completed):
+1. Visual feedback architecture — matplotlib mplot3d with Agg backend for headless rendering
+2. Skill specification format — portable Python library with agent-framework adapters
+3. Open-source toolchain integration — trimesh, manifold3d, OpenSCAD, PrusaSlicer CLI
+4. User pain points and workflows — tribal knowledge encoded as structured YAML data

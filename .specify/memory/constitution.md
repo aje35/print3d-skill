@@ -2,36 +2,21 @@
   ╔══════════════════════════════════════════════════════════╗
   ║  Sync Impact Report                                      ║
   ╠══════════════════════════════════════════════════════════╣
-  ║  Version change: N/A (template) → 1.0.0                 ║
-  ║  Bump rationale: Initial ratification — MAJOR 1.0.0     ║
+  ║  Version change: 1.0.0 → 1.1.0                         ║
+  ║  Bump rationale: MINOR — added documentation maintenance ║
+  ║    requirements to Development Workflow section           ║
   ║                                                          ║
-  ║  Modified principles:                                    ║
-  ║    [PRINCIPLE_1] → I. Open Tools Only                    ║
-  ║    [PRINCIPLE_2] → II. Agent-Portable Skill Architecture ║
-  ║    [PRINCIPLE_3] → III. Visual Verification at Every Step║
-  ║    [PRINCIPLE_4] → IV. Validate Before You Print         ║
-  ║    [PRINCIPLE_5] → V. Progressive Disclosure of Knowledge║
-  ║    (new)         → VI. Tiered Dependencies               ║
-  ║    (new)         → VII. Encode Tribal Knowledge          ║
+  ║  Modified sections:                                      ║
+  ║    - Development Workflow: added documentation            ║
+  ║      maintenance requirements (README.md, CLAUDE.md,     ║
+  ║      vision.md, feature-chunking-strategy.md, spec       ║
+  ║      artifacts, eval/README.md)                          ║
   ║                                                          ║
-  ║  Added sections:                                         ║
-  ║    - Dependency Constraints                              ║
-  ║    - Development Workflow                                ║
-  ║    - Governance (populated from template)                ║
-  ║                                                          ║
+  ║  Added sections: None                                    ║
   ║  Removed sections: None                                  ║
+  ║  Modified principles: None                               ║
   ║                                                          ║
-  ║  Templates requiring updates:                            ║
-  ║    ✅ .specify/templates/plan-template.md — Constitution ║
-  ║       Check section is generic; will be populated per    ║
-  ║       feature by /speckit.plan. No template change needed║
-  ║    ✅ .specify/templates/spec-template.md — No principle-║
-  ║       specific sections; compatible as-is.               ║
-  ║    ✅ .specify/templates/tasks-template.md — No principle║
-  ║       -specific task types; compatible as-is.            ║
-  ║    ✅ No command templates found.                        ║
-  ║    ✅ No README.md or CLAUDE.md to update.               ║
-  ║                                                          ║
+  ║  Templates requiring updates: None                       ║
   ║  Follow-up TODOs: None                                   ║
   ╚══════════════════════════════════════════════════════════╝
 -->
@@ -217,6 +202,20 @@ inline in prompt text?
 - **Visual regression tests**: workflows that produce rendered previews
   MUST include baseline image comparison or structural validation to
   catch rendering regressions.
+- **Documentation maintenance**: Every implementation MUST update
+  project documentation as part of the work, not as an afterthought.
+  Specifically:
+  - `README.md` — Update status table, architecture, and quick start
+    examples when public API or features change.
+  - `CLAUDE.md` — Update active technologies, commands, and project
+    structure when new subsystems or dependencies are added.
+  - `docs/vision.md` — Update the Status section when features ship.
+  - `docs/feature-chunking-strategy.md` — Update feature status when
+    a feature completes.
+  - Spec artifacts (`spec.md`, `tasks.md`) — Mark tasks complete and
+    update status as work progresses.
+  - `eval/README.md` — Update the use case index when new evaluation
+    scenarios are added.
 
 ## Governance
 
@@ -242,4 +241,4 @@ Check section that maps the planned implementation against all seven
 principles. Violations MUST be documented and justified in the
 Complexity Tracking table.
 
-**Version**: 1.0.0 | **Ratified**: 2026-03-14 | **Last Amended**: 2026-03-14
+**Version**: 1.1.0 | **Ratified**: 2026-03-14 | **Last Amended**: 2026-03-14
