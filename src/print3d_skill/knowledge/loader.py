@@ -24,7 +24,20 @@ def _load_all_knowledge_files() -> list[KnowledgeFile]:
     files: list[KnowledgeFile] = []
 
     package = importlib.resources.files("print3d_skill.knowledge_base")
-    for item in package.iterdir():
+    _scan_directory(package, files)
+    return files
+
+
+def _scan_directory(
+    directory: importlib.resources.abc.Traversable,
+    files: list[KnowledgeFile],
+) -> None:
+    """Recursively scan a directory for YAML knowledge files."""
+    for item in directory.iterdir():
+        if item.is_dir():
+            _scan_directory(item, files)
+            continue
+
         if not item.name.endswith(".yaml"):
             continue
 
@@ -53,8 +66,6 @@ def _load_all_knowledge_files() -> list[KnowledgeFile]:
             metadata=metadata,
             data=raw["data"],
         ))
-
-    return files
 
 
 def _matches_field(file_values: list[str], query_value: str | None) -> bool:

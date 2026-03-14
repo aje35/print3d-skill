@@ -252,6 +252,107 @@ class TestF2Enums:
         assert len(MeshHealthClassification) == 3
 
 
+class TestF3PublicFunctions:
+    """Verify F3 public functions are importable with correct signatures."""
+
+    def test_create_design_signature(self):
+        from print3d_skill import create_design
+
+        sig = inspect.signature(create_design)
+        params = list(sig.parameters.keys())
+        assert "request" in params
+        assert "config" in params
+
+    def test_validate_printability_signature(self):
+        from print3d_skill import validate_printability
+
+        sig = inspect.signature(validate_printability)
+        params = list(sig.parameters.keys())
+        assert "mesh_path" in params
+        assert "config" in params
+
+    def test_start_session_signature(self):
+        from print3d_skill.create import start_session
+
+        sig = inspect.signature(start_session)
+        params = list(sig.parameters.keys())
+        assert "request" in params
+        assert "config" in params
+
+    def test_submit_iteration_signature(self):
+        from print3d_skill.create import submit_iteration
+
+        sig = inspect.signature(submit_iteration)
+        params = list(sig.parameters.keys())
+        assert "session" in params
+        assert "scad_code" in params
+        assert "changes" in params
+
+    def test_export_design_signature(self):
+        from print3d_skill.create import export_design
+
+        sig = inspect.signature(export_design)
+        params = list(sig.parameters.keys())
+        assert "session" in params
+        assert "output_dir" in params
+
+    def test_detect_bosl2_signature(self):
+        from print3d_skill.create.bosl2 import detect_bosl2
+
+        sig = inspect.signature(detect_bosl2)
+        assert len(sig.parameters) == 0
+
+
+class TestF3Exceptions:
+    """Verify F3-specific exceptions exist and inherit from Print3DSkillError."""
+
+    @pytest.mark.parametrize("exc_name", ["DesignError", "PrintabilityError"])
+    def test_f3_exception_inherits_from_base(self, exc_name):
+        from print3d_skill import exceptions
+        from print3d_skill.exceptions import Print3DSkillError
+
+        exc_class = getattr(exceptions, exc_name)
+        assert issubclass(exc_class, Print3DSkillError)
+
+
+class TestF3ReturnTypes:
+    """Verify F3 return types are importable dataclasses."""
+
+    @pytest.mark.parametrize("type_name", [
+        "CreateConfig",
+        "CreateResult",
+        "CreateSession",
+        "DesignExport",
+        "DesignRequest",
+        "GeneratedDesign",
+        "PrintabilityReport",
+        "PrintabilityWarning",
+    ])
+    def test_f3_type_is_dataclass(self, type_name):
+        from print3d_skill import models
+
+        cls = getattr(models, type_name)
+        assert hasattr(cls, "__dataclass_fields__")
+
+
+class TestF3PrintabilityIdempotency:
+    """Verify validate_printability on a print-ready mesh returns is_printable=True."""
+
+    def test_print_ready_mesh(self, clean_mesh):
+        from print3d_skill import validate_printability
+        from print3d_skill.models.create import CreateConfig
+
+        # Use generous thresholds so the clean mesh passes
+        config = CreateConfig(
+            min_wall_thickness=0.1,
+            max_overhang_angle=89.0,
+            max_bridge_distance=1000.0,
+            min_bed_adhesion_area=0.0,
+        )
+        report = validate_printability(str(clean_mesh), config)
+        assert report.is_printable is True
+
+
 class TestF2Idempotency:
     """Verify repair_mesh on an already-clean mesh is a no-op."""
 

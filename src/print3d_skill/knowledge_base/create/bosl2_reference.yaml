@@ -1,0 +1,115 @@
+metadata:
+  type: lookup_table
+  topic: bosl2_module_reference
+  modes: [create]
+  materials: []
+  printers: []
+  version: "1.0"
+
+data:
+  description: "BOSL2 library module reference summaries with key parameters and usage examples"
+  include_pattern: "include <BOSL2/std.scad>"
+  modules:
+    - name: cuboid
+      purpose: "Box with optional rounding, chamfers, and anchoring"
+      key_parameters:
+        size: "[x, y, z] dimensions"
+        rounding: "Corner radius in mm (0 = sharp corners)"
+        chamfer: "Chamfer size in mm (alternative to rounding)"
+        anchor: "Positioning anchor (CENTER, BOTTOM, TOP, etc.)"
+        edges: "Which edges to round (TOP, BOT, ALL, etc.)"
+      example: |
+        include <BOSL2/std.scad>
+        cuboid([50, 30, 20], rounding=3, edges=TOP, anchor=BOTTOM);
+      notes: "Replaces native cube() when rounded edges needed. Much cleaner than manual minkowski."
+
+    - name: cyl
+      purpose: "Cylinder with rounding, chamfers, and anchoring"
+      key_parameters:
+        h: "Height"
+        d: "Diameter (or r for radius)"
+        rounding: "End face rounding radius"
+        chamfer: "End face chamfer size"
+        anchor: "Positioning anchor"
+      example: |
+        include <BOSL2/std.scad>
+        cyl(h=20, d=10, rounding=2, anchor=BOTTOM);
+      notes: "Replaces native cylinder() with built-in rounding."
+
+    - name: threaded_rod
+      purpose: "Generate metric threaded rods"
+      key_parameters:
+        d: "Nominal diameter (e.g., 3 for M3)"
+        l: "Length of threaded section"
+        pitch: "Thread pitch in mm (default from standard)"
+        internal: "true for internal threads (nut/hole)"
+      example: |
+        include <BOSL2/std.scad>
+        include <BOSL2/threading.scad>
+        threaded_rod(d=8, l=20, pitch=1.25);
+      notes: "Use with difference() to create threaded holes. Add 0.2mm clearance for printed threads."
+
+    - name: threaded_nut
+      purpose: "Generate hex nut with internal threads"
+      key_parameters:
+        nutwidth: "Flat-to-flat width of hex nut"
+        id: "Internal thread diameter"
+        h: "Nut height"
+        pitch: "Thread pitch in mm"
+      example: |
+        include <BOSL2/std.scad>
+        include <BOSL2/threading.scad>
+        threaded_nut(nutwidth=13, id=8, h=6.5, pitch=1.25);
+      notes: "For FDM, thread tolerance is critical. Test-print a sample first."
+
+    - name: spur_gear2d
+      purpose: "Generate 2D involute spur gear profile for extrusion"
+      key_parameters:
+        pitch: "Circular pitch or module"
+        teeth: "Number of teeth"
+        pressure_angle: "Usually 20 degrees"
+        clearance: "Tooth clearance (backlash)"
+      example: |
+        include <BOSL2/std.scad>
+        include <BOSL2/gears.scad>
+        linear_extrude(height=5)
+            spur_gear2d(pitch=3, teeth=20, pressure_angle=20);
+      notes: "Add 0.1-0.2mm backlash for FDM. Minimum ~12 teeth for 0.4mm nozzle."
+
+    - name: bezier_curve
+      purpose: "Generate smooth curves from control points"
+      key_parameters:
+        points: "List of [x,y] or [x,y,z] control points"
+        splinesteps: "Number of segments (higher = smoother)"
+      example: |
+        include <BOSL2/std.scad>
+        include <BOSL2/beziers.scad>
+        bezpath = [[0,0], [10,20], [30,20], [40,0]];
+        stroke(bezier_curve(bezpath, splinesteps=32), width=2);
+      notes: "Useful for organic shapes, handles, ergonomic curves."
+
+    - name: diff
+      purpose: "Boolean difference using tag-based approach"
+      key_parameters:
+        remove: "Tag name for shapes to subtract (default 'remove')"
+        keep: "Tag name for shapes to keep (default 'keep')"
+      example: |
+        include <BOSL2/std.scad>
+        diff()
+            cuboid([40, 40, 10]) {
+                tag("remove") attach(TOP) cyl(d=10, h=15);
+            }
+      notes: "Cleaner than nested difference() calls. Use with attach() for relative positioning."
+
+    - name: attach
+      purpose: "Position child relative to parent using named anchors"
+      key_parameters:
+        from: "Anchor on parent (TOP, BOTTOM, LEFT, RIGHT, FRONT, BACK)"
+        to: "Anchor on child to align"
+        overlap: "Overlap distance in mm"
+      example: |
+        include <BOSL2/std.scad>
+        cuboid([40, 40, 10], anchor=BOTTOM) {
+            attach(TOP) cyl(d=10, h=20, anchor=BOTTOM);
+        }
+      notes: "Eliminates manual translate() calculations. The core of BOSL2's spatial system."

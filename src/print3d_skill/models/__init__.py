@@ -10,6 +10,16 @@ from print3d_skill.models.analysis import (
 )
 from print3d_skill.models.export import ExportResult
 from print3d_skill.models.mesh import BoundingBox, MeshFile
+from print3d_skill.models.create import (
+    CreateConfig,
+    CreateResult,
+    CreateSession,
+    DesignExport,
+    DesignRequest,
+    GeneratedDesign,
+    PrintabilityReport,
+    PrintabilityWarning,
+)
 from print3d_skill.models.repair import (
     RepairConfig,
     RepairResult,
@@ -19,13 +29,21 @@ from print3d_skill.models.repair import (
 
 __all__ = [
     "BoundingBox",
+    "CreateConfig",
+    "CreateResult",
+    "CreateSession",
     "DefectSeverity",
     "DefectType",
+    "DesignExport",
+    "DesignRequest",
     "ExportResult",
+    "GeneratedDesign",
     "MeshAnalysisReport",
     "MeshDefect",
     "MeshFile",
     "MeshHealthClassification",
+    "PrintabilityReport",
+    "PrintabilityWarning",
     "RepairConfig",
     "RepairResult",
     "RepairStrategy",
