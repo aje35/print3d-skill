@@ -25,4 +25,4 @@ eval/
 
 | # | Name | Mode(s) | Status |
 |---|------|---------|--------|
-| 001 | [Resize Headset Holder](001-resize-headset-holder/) | Modify | Waiting for F4 |
+| 001 | [Resize Headset Holder](001-resize-headset-holder/) | Modify | Ready (F4 complete) |

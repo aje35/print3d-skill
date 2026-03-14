@@ -44,6 +44,31 @@ for kf in results:
 ```
 
 ```python
+# Modify an existing mesh: cut a hole, scale, split
+from print3d_skill import modify_mesh
+
+# Boolean difference: cut a 6mm hole through a bracket
+result = modify_mesh(
+    "bracket.stl", operation="boolean",
+    boolean_type="difference",
+    primitive_type="cylinder",
+    primitive_dimensions={"diameter": 6.0, "height": 30.0},
+    primitive_position=(15.0, 10.0, 0.0),
+)
+print(result.output_mesh_paths[0])  # "bracket_modified.stl"
+
+# Scale to a specific width
+result = modify_mesh("part.stl", operation="scale",
+                     scale_mode="dimension_target",
+                     target_axis="x", target_value_mm=80.0)
+
+# Split a tall model for multi-part printing
+result = modify_mesh("vase.stl", operation="split",
+                     split_axis="z", split_offset_mm=100.0)
+print(result.output_mesh_paths)  # ["vase_bottom.stl", "vase_top.stl"]
+```
+
+```python
 # Discover available tools
 from print3d_skill import list_capabilities
 
@@ -54,23 +79,16 @@ for cap in list_capabilities():
 
 ## Current Status
 
-**Feature 1 (Core Infrastructure)** is complete. This provides:
-
-| Subsystem | What It Does |
-|-----------|-------------|
-| Rendering pipeline | Headless multi-angle PNG previews (matplotlib, no GPU) for STL, 3MF, OBJ |
-| Tool orchestration | Capability-based tool discovery with graceful degradation |
-| Knowledge system | YAML domain knowledge with AND-filtered context queries |
-| Skill router | Mode dispatch to five workflow handlers (currently stubs) |
+Four features are complete, covering the full create/fix/modify pipeline:
 
 ### Roadmap
 
 | Feature | Mode | Status |
 |---------|------|--------|
 | F1: Core Infrastructure | Foundation | **Complete** |
-| F2: Mesh Analysis & Repair | Fix | Planned |
-| F3: Parametric CAD | Create | Planned |
-| F4: Model Modification | Modify | Planned |
+| F2: Mesh Analysis & Repair | Fix | **Complete** |
+| F3: Parametric CAD | Create | **Complete** |
+| F4: Model Modification | Modify | **Complete** |
 | F5: G-code & Slicing | Validate | Planned |
 | F6: Print Diagnosis | Diagnose | Planned |
 
@@ -80,8 +98,13 @@ See [docs/feature-chunking-strategy.md](docs/feature-chunking-strategy.md) for t
 
 ```
 src/print3d_skill/
+├── create/             # Create mode: parametric CAD via OpenSCAD
+├── modify/             # Modify mode: boolean, scale, combine, text, split
+├── analysis/           # Mesh defect detection (10 detectors)
+├── repair/             # Mesh repair pipeline (6 strategies)
+├── export/             # Format-specific mesh exporters
 ├── rendering/          # Headless multi-angle mesh preview (matplotlib Agg)
-├── tools/              # Capability registry + providers (trimesh, manifold3d, OpenSCAD)
+├── tools/              # Capability registry + providers
 ├── knowledge/          # YAML knowledge loader with context-filtered queries
 ├── knowledge_base/     # Bundled domain knowledge (tolerances, materials, decision trees)
 ├── modes/              # Workflow handlers (create, fix, modify, diagnose, validate)
@@ -107,7 +130,7 @@ src/print3d_skill/
 git clone https://github.com/aje35/print3d-skill.git
 cd print3d-skill
 pip install -e ".[dev]"
-pytest                      # 73 tests
+pytest                      # Run all tests
 ruff check src/ tests/      # Lint
 ```
 

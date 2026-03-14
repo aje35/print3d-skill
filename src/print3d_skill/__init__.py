@@ -12,6 +12,7 @@ from print3d_skill.analysis import analyze_mesh
 from print3d_skill.create import create_design, validate_printability
 from print3d_skill.export import export_mesh
 from print3d_skill.knowledge import query_knowledge
+from print3d_skill.modify import modify_mesh
 from print3d_skill.rendering import render_preview
 from print3d_skill.repair import repair_mesh
 from print3d_skill.router import route
@@ -28,6 +29,7 @@ __all__ = [
     "export_mesh",
     "get_capability",
     "list_capabilities",
+    "modify_mesh",
     "query_knowledge",
     "refresh_capabilities",
     "render_preview",

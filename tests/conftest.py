@@ -254,3 +254,79 @@ def mesh_ply(tmp_path_factory: pytest.TempPathFactory) -> Path:
     path = tmp_path_factory.mktemp("meshes") / "mesh.ply"
     mesh.export(str(path), file_type="ply")
     return path
+
+
+# --- Modify mode fixtures ---
+
+
+@pytest.fixture(scope="session")
+def box_with_known_dims(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    """Generate a box mesh with known exact dimensions (40x30x20 mm)."""
+    mesh = trimesh.creation.box(extents=[40, 30, 20])
+    path = tmp_path_factory.mktemp("meshes") / "box_40x30x20.stl"
+    mesh.export(str(path), file_type="stl")
+    return path
+
+
+@pytest.fixture(scope="session")
+def tall_box_stl(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    """Generate a tall box for split testing (40x40x100 mm)."""
+    mesh = trimesh.creation.box(extents=[40, 40, 100])
+    path = tmp_path_factory.mktemp("meshes") / "tall_box.stl"
+    mesh.export(str(path), file_type="stl")
+    return path
+
+
+@pytest.fixture(scope="session")
+def cylinder_stl(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    """Generate a cylinder mesh for combine/boolean testing."""
+    mesh = trimesh.creation.cylinder(radius=10, height=30, sections=32)
+    path = tmp_path_factory.mktemp("meshes") / "cylinder.stl"
+    mesh.export(str(path), file_type="stl")
+    return path
+
+
+@pytest.fixture(scope="session")
+def sphere_stl(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    """Generate a sphere mesh for boolean testing."""
+    mesh = trimesh.creation.icosphere(subdivisions=3, radius=15.0)
+    path = tmp_path_factory.mktemp("meshes") / "sphere.stl"
+    mesh.export(str(path), file_type="stl")
+    return path
+
+
+@pytest.fixture(scope="session")
+def mesh_with_screw_holes(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    """Generate a box with M3 clearance holes (3.4mm diameter) for feature detection."""
+    base = trimesh.creation.box(extents=[40, 30, 10])
+    # Create M3 clearance holes (3.4mm diameter) — boolean subtract cylinders
+    try:
+        import manifold3d
+
+        m_base = manifold3d.Manifold.of_trimesh(base)
+        # Two M3 holes at known positions
+        for x_pos in [10.0, -10.0]:
+            hole = trimesh.creation.cylinder(radius=1.7, height=20.0, sections=32)
+            hole.apply_translation([x_pos, 0, 0])
+            m_hole = manifold3d.Manifold.of_trimesh(hole)
+            m_base = m_base - m_hole
+        result_mesh = m_base.to_trimesh()
+        mesh = trimesh.Trimesh(
+            vertices=result_mesh.vert_properties[:, :3],
+            faces=result_mesh.tri_verts,
+        )
+    except Exception:
+        # Fallback: use plain box if manifold3d fails
+        mesh = base
+    path = tmp_path_factory.mktemp("meshes") / "box_with_m3_holes.stl"
+    mesh.export(str(path), file_type="stl")
+    return path
+
+
+@pytest.fixture(scope="session")
+def second_box_stl(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    """Generate a second box mesh for combine testing (20x20x20 mm)."""
+    mesh = trimesh.creation.box(extents=[20, 20, 20])
+    path = tmp_path_factory.mktemp("meshes") / "second_box.stl"
+    mesh.export(str(path), file_type="stl")
+    return path

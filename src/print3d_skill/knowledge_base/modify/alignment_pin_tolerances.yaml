@@ -1,0 +1,76 @@
+metadata:
+  type: tolerance_table
+  topic: Alignment Pin Tolerances for Multi-Part Prints
+  modes: [modify]
+  materials: [PLA, PETG, ABS]
+  printers: []
+  version: "1.0"
+
+data:
+  description: "Pin diameter, hole clearance, and fit recommendations by material and nozzle"
+  clearance_by_material:
+    - material: PLA
+      nozzle_mm: 0.4
+      clearance_mm: 0.3
+      fit_type: "slip"
+      notes: "PLA has minimal shrinkage; 0.3mm clearance gives easy slip fit"
+    - material: PLA
+      nozzle_mm: 0.6
+      clearance_mm: 0.35
+      fit_type: "slip"
+      notes: "Wider nozzle needs slightly more clearance"
+    - material: PETG
+      nozzle_mm: 0.4
+      clearance_mm: 0.35
+      fit_type: "slip"
+      notes: "PETG has slight stringing; extra clearance helps insertion"
+    - material: PETG
+      nozzle_mm: 0.6
+      clearance_mm: 0.4
+      fit_type: "slip"
+      notes: "Wider nozzle + PETG stringing needs more room"
+    - material: ABS
+      nozzle_mm: 0.4
+      clearance_mm: 0.25
+      fit_type: "press"
+      notes: "ABS shrinks more; tighter clearance compensates"
+    - material: ABS
+      nozzle_mm: 0.6
+      clearance_mm: 0.3
+      fit_type: "press"
+      notes: "ABS shrinkage + wider nozzle"
+
+  press_fit_values:
+    - material: PLA
+      interference_mm: -0.1
+      notes: "Negative clearance for friction fit; may crack PLA"
+    - material: PETG
+      interference_mm: -0.05
+      notes: "PETG is more flexible; lighter press fit works"
+    - material: ABS
+      interference_mm: -0.15
+      notes: "ABS handles press fit well due to slight flexibility"
+
+  recommended_pin_geometry:
+    - pin_diameter_mm: 4.0
+      min_height_mm: 4.0
+      max_height_mm: 8.0
+      height_to_diameter_ratio: "1.0 to 2.0"
+      notes: "Standard alignment pin for medium parts (50-200mm)"
+    - pin_diameter_mm: 3.0
+      min_height_mm: 3.0
+      max_height_mm: 6.0
+      height_to_diameter_ratio: "1.0 to 2.0"
+      notes: "Smaller pin for fine parts (<50mm)"
+    - pin_diameter_mm: 6.0
+      min_height_mm: 6.0
+      max_height_mm: 12.0
+      height_to_diameter_ratio: "1.0 to 2.0"
+      notes: "Larger pin for heavy/large parts (>200mm)"
+
+  best_practices:
+    - "Always chamfer pin tops (0.5mm at 45 degrees) for easier insertion"
+    - "Use at least 2 pins for rotational alignment"
+    - "Place pins away from edges (minimum 2x pin diameter from edge)"
+    - "Test fit with a single pin before printing the full assembly"
+    - "Print pins vertically for maximum strength"
