@@ -1,0 +1,110 @@
+metadata:
+  type: lookup_table
+  topic: create_tolerances
+  modes: [create]
+  materials: [PLA, PETG, ABS]
+  printers: []
+  version: "1.0"
+
+data:
+  description: "Tolerance and clearance tables for mechanical joints by material and nozzle diameter"
+  press_fit:
+    - material: PLA
+      nozzle_mm: 0.4
+      clearance_mm: 0.1
+      notes: "PLA shrinks 0.3-0.5%. Use tighter fit. Test-print a sample."
+    - material: PLA
+      nozzle_mm: 0.6
+      clearance_mm: 0.15
+      notes: "Larger nozzle = less precision. Increase clearance slightly."
+    - material: PLA
+      nozzle_mm: 0.8
+      clearance_mm: 0.2
+      notes: "0.8mm nozzle has limited precision for press fits."
+    - material: PETG
+      nozzle_mm: 0.4
+      clearance_mm: 0.15
+      notes: "PETG is more flexible than PLA. Slightly looser fit."
+    - material: PETG
+      nozzle_mm: 0.6
+      clearance_mm: 0.2
+      notes: "PETG strings more — account for surface roughness."
+    - material: PETG
+      nozzle_mm: 0.8
+      clearance_mm: 0.25
+      notes: "Large nozzle PETG press fits need generous clearance."
+    - material: ABS
+      nozzle_mm: 0.4
+      clearance_mm: 0.12
+      notes: "ABS shrinks 0.5-0.7%. Account for warping on large parts."
+    - material: ABS
+      nozzle_mm: 0.6
+      clearance_mm: 0.18
+      notes: "Warping risk increases with part size."
+    - material: ABS
+      nozzle_mm: 0.8
+      clearance_mm: 0.22
+      notes: "Large nozzle ABS: design for post-processing (sanding)."
+  snap_fit:
+    - material: PLA
+      nozzle_mm: 0.4
+      clearance_mm: 0.2
+      deflection_mm: 0.5
+      notes: "PLA is brittle. Keep deflection under 1mm. Add fillet at base."
+    - material: PETG
+      nozzle_mm: 0.4
+      clearance_mm: 0.15
+      deflection_mm: 1.0
+      notes: "PETG is flexible. Good for repeated snap cycles."
+    - material: ABS
+      nozzle_mm: 0.4
+      clearance_mm: 0.18
+      deflection_mm: 0.8
+      notes: "ABS has decent flexibility. Acetone-smooth mating surfaces."
+  screw_clearance:
+    - screw_size: M2
+      hole_diameter_mm: 2.4
+      boss_outer_diameter_mm: 5.0
+      notes: "M2 clearance hole. Boss wall minimum 1.3mm."
+    - screw_size: M2.5
+      hole_diameter_mm: 2.9
+      boss_outer_diameter_mm: 6.0
+      notes: "M2.5 clearance hole."
+    - screw_size: M3
+      hole_diameter_mm: 3.4
+      boss_outer_diameter_mm: 7.0
+      notes: "M3 clearance hole. Most common for 3D printed parts."
+    - screw_size: M4
+      hole_diameter_mm: 4.5
+      boss_outer_diameter_mm: 9.0
+      notes: "M4 clearance hole."
+    - screw_size: M5
+      hole_diameter_mm: 5.5
+      boss_outer_diameter_mm: 11.0
+      notes: "M5 clearance hole."
+  self_tapping_pilot:
+    - screw_size: M2
+      pilot_hole_mm: 1.6
+      notes: "Self-tapping into PLA/PETG. Print vertically for strength."
+    - screw_size: M2.5
+      pilot_hole_mm: 2.0
+      notes: "Self-tapping pilot. Reduce by 0.1mm for tighter grip."
+    - screw_size: M3
+      pilot_hole_mm: 2.5
+      notes: "Self-tapping pilot. Most reliable for printed parts."
+    - screw_size: M4
+      pilot_hole_mm: 3.3
+      notes: "Self-tapping pilot for M4."
+  heat_set_insert:
+    - insert_size: M2
+      hole_diameter_mm: 3.2
+      depth_mm: 3.5
+      notes: "Hole slightly smaller than insert OD. Melt with soldering iron."
+    - insert_size: M3
+      hole_diameter_mm: 4.0
+      depth_mm: 5.0
+      notes: "Most common heat-set insert size for 3D prints."
+    - insert_size: M4
+      hole_diameter_mm: 5.6
+      depth_mm: 6.0
+      notes: "Larger inserts need thicker boss walls (min 2mm)."

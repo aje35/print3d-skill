@@ -86,3 +86,11 @@ class RepairError(Print3DSkillError):
 
 class ExportError(Print3DSkillError):
     """Raised when mesh export fails (e.g., unable to write output file)."""
+
+
+class DesignError(Print3DSkillError):
+    """Raised when the design pipeline encounters an unrecoverable error."""
+
+
+class PrintabilityError(Print3DSkillError):
+    """Raised when printability validation cannot be performed."""

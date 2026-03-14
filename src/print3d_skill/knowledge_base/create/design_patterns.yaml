@@ -1,0 +1,128 @@
+metadata:
+  type: design_pattern
+  topic: mechanical_design_patterns
+  modes: [create]
+  materials: []
+  printers: []
+  version: "1.0"
+
+data:
+  description: "Standard mechanical design patterns for FDM 3D printed parts"
+  patterns:
+    - name: screw_boss
+      description: "Cylindrical boss for receiving a screw or heat-set insert"
+      parameters:
+        inner_diameter: "Screw clearance hole or insert hole diameter"
+        outer_diameter: "2x inner diameter minimum, 2.5x recommended"
+        height: "Screw engagement length + 1mm clearance"
+        wall_thickness: "Minimum 1.5mm for M3, 2mm for M4+"
+        draft_angle: "1-2° outward for easier printing and demolding"
+        fillet_radius: "1-2mm at base for stress distribution"
+      openscad_snippet: |
+        module screw_boss(inner_d, outer_d, height, fillet_r=1) {
+            union() {
+                difference() {
+                    cylinder(h=height, d=outer_d, $fn=32);
+                    translate([0, 0, -0.1])
+                        cylinder(h=height+0.2, d=inner_d, $fn=32);
+                }
+                // Base fillet
+                difference() {
+                    cylinder(h=fillet_r, d=outer_d + 2*fillet_r, $fn=32);
+                    translate([0, 0, fillet_r])
+                        rotate_extrude($fn=32)
+                            translate([outer_d/2 + fillet_r, 0])
+                                circle(r=fillet_r, $fn=16);
+                }
+            }
+        }
+      notes: "Print vertically for best layer adhesion around the hole."
+
+    - name: snap_clip
+      description: "Cantilever snap clip for tool-free assembly"
+      parameters:
+        beam_length: "5-15mm typical. Longer = more flexible."
+        beam_width: "3-8mm depending on load"
+        beam_thickness: "1-2mm. Thinner = more flex, weaker."
+        hook_depth: "0.5-1.5mm. Determines holding force."
+        hook_angle: "30-45° entry ramp, 90° retention"
+        fillet_radius: "0.5-1mm at base (critical for fatigue life)"
+      openscad_snippet: |
+        module snap_clip(length, width, thickness, hook) {
+            // Cantilever beam
+            cube([width, thickness, length]);
+            // Hook at end
+            translate([0, 0, length])
+                rotate([0, 0, 0])
+                    linear_extrude(height=width)
+                        polygon([[0,0], [thickness+hook,0],
+                                 [thickness,hook], [0,hook]]);
+        }
+      notes: "PETG is best material for snap clips (flexible, fatigue-resistant). PLA snaps are brittle."
+
+    - name: living_hinge
+      description: "Thin flexible section connecting two rigid bodies"
+      parameters:
+        hinge_thickness: "0.4-0.8mm (1-2 layers). Thinner = more flexible."
+        hinge_width: "Full width of the part for even stress"
+        hinge_length: "2-5mm along the bend axis"
+        relief_radius: "0.5-1mm stress relief at each end"
+      openscad_snippet: |
+        module living_hinge(width, thickness=0.6, length=3) {
+            cube([width, length, thickness]);
+        }
+      notes: "Only works with PETG or TPU. PLA will crack. Print with 100% infill at hinge. Orient so layers are parallel to bend axis."
+
+    - name: vent_slot
+      description: "Ventilation slot pattern for airflow or aesthetics"
+      parameters:
+        slot_width: "1.5-3mm (min 2x nozzle diameter)"
+        slot_length: "Part-dependent. Keep aspect ratio < 10:1."
+        slot_spacing: "Equal to slot width minimum"
+        corner_radius: "0.5mm minimum to avoid stress concentration"
+        pattern: "Linear, honeycomb, or diagonal"
+      openscad_snippet: |
+        module vent_slots(width, height, slot_w=2, slot_l=15, spacing=2) {
+            n_slots = floor(width / (slot_w + spacing));
+            for (i = [0:n_slots-1]) {
+                translate([i * (slot_w + spacing) + spacing/2, 0, 0])
+                    cube([slot_w, slot_l, height + 0.1]);
+            }
+        }
+      notes: "Honeycomb pattern is strongest per open area. Slot width must be >= 2x nozzle diameter."
+
+    - name: cable_routing_channel
+      description: "Channel for routing wires or cables through a part"
+      parameters:
+        channel_width: "Cable diameter + 1-2mm clearance"
+        channel_depth: "Cable diameter + 0.5mm"
+        corner_radius: "Equal to channel width/2 for smooth routing"
+        entry_flare: "Widen entry by 2mm for easy cable insertion"
+        lid_clip_spacing: "Every 20-30mm for snap-on lid"
+      openscad_snippet: |
+        module cable_channel(width, depth, length) {
+            translate([0, 0, 0])
+                linear_extrude(height=length)
+                    offset(r=1)
+                        offset(r=-1)
+                            square([width, depth]);
+        }
+      notes: "Design with removable lid for cable insertion. Use snap clips every 20-30mm."
+
+    - name: pcb_mount
+      description: "Standoffs and mounting points for a PCB"
+      parameters:
+        standoff_height: "3-5mm typical clearance"
+        standoff_diameter: "5-6mm for M2.5, 7mm for M3"
+        hole_diameter: "M2.5: 2.9mm clearance, M3: 3.4mm clearance"
+        mounting_pattern: "Match PCB hole pattern exactly"
+        tolerance: "+0.2mm on hole spacing for alignment"
+      openscad_snippet: |
+        module pcb_standoff(height=4, outer_d=6, hole_d=2.9) {
+            difference() {
+                cylinder(h=height, d=outer_d, $fn=24);
+                translate([0, 0, -0.1])
+                    cylinder(h=height+0.2, d=hole_d, $fn=24);
+            }
+        }
+      notes: "Common PCB patterns: Raspberry Pi (58x49mm), Arduino Uno (66x51.4mm). Add 0.2mm to all spacings."

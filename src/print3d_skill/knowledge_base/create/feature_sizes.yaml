@@ -1,0 +1,60 @@
+metadata:
+  type: lookup_table
+  topic: minimum_feature_sizes
+  modes: [create]
+  materials: []
+  printers: []
+  version: "1.0"
+
+data:
+  description: "Minimum printable feature sizes by nozzle diameter for FDM printing"
+  by_nozzle:
+    - nozzle_mm: 0.25
+      min_wall_thickness_mm: 0.5
+      min_hole_diameter_mm: 1.0
+      min_gap_width_mm: 0.4
+      min_text_height_mm: 4.0
+      min_emboss_depth_mm: 0.3
+      min_pin_diameter_mm: 1.5
+      layer_height_range_mm: [0.05, 0.15]
+      notes: "Fine detail nozzle. Slow but precise. Good for miniatures."
+    - nozzle_mm: 0.4
+      min_wall_thickness_mm: 0.8
+      min_hole_diameter_mm: 2.0
+      min_gap_width_mm: 0.5
+      min_text_height_mm: 6.0
+      min_emboss_depth_mm: 0.4
+      min_pin_diameter_mm: 2.0
+      layer_height_range_mm: [0.1, 0.28]
+      notes: "Standard nozzle. Best balance of speed and detail."
+    - nozzle_mm: 0.6
+      min_wall_thickness_mm: 1.2
+      min_hole_diameter_mm: 3.0
+      min_gap_width_mm: 0.8
+      min_text_height_mm: 8.0
+      min_emboss_depth_mm: 0.6
+      min_pin_diameter_mm: 3.0
+      layer_height_range_mm: [0.15, 0.4]
+      notes: "Large nozzle. Faster prints, less detail. Good for structural parts."
+    - nozzle_mm: 0.8
+      min_wall_thickness_mm: 1.6
+      min_hole_diameter_mm: 4.0
+      min_gap_width_mm: 1.0
+      min_text_height_mm: 10.0
+      min_emboss_depth_mm: 0.8
+      min_pin_diameter_mm: 4.0
+      layer_height_range_mm: [0.2, 0.56]
+      notes: "Extra large nozzle. Very fast but coarse. Structural/large parts only."
+  general_rules:
+    - rule: "Minimum wall = 2x nozzle diameter"
+      rationale: "Single wall (1x nozzle) is fragile. Two perimeters is the practical minimum."
+    - rule: "Minimum hole = 5x nozzle diameter for round holes"
+      rationale: "Below this, faceting makes holes non-circular and dimensionally inaccurate."
+    - rule: "Horizontal holes print smaller than designed"
+      rationale: "Overhang at top of horizontal hole sags. Oversize by 0.2-0.5mm or use teardrop shape."
+    - rule: "Vertical features are stronger than horizontal"
+      rationale: "Layer lines run perpendicular to load direction in vertical prints."
+    - rule: "Bridging max ~10mm without support"
+      rationale: "Material sags over unsupported spans. Reduce speed for longer bridges."
+    - rule: "45-degree overhang max without support"
+      rationale: "Beyond 45° each layer has insufficient support from the layer below."
