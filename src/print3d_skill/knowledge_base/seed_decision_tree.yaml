@@ -1,0 +1,32 @@
+metadata:
+  type: decision_tree
+  topic: non_manifold_diagnosis
+  modes: [fix]
+  materials: []
+  printers: []
+  version: "1.0"
+
+data:
+  description: "Diagnosis flow for non-manifold mesh errors"
+  root:
+    question: "Is the mesh watertight?"
+    yes:
+      question: "Are all face normals consistent?"
+      yes:
+        result: "Mesh is manifold. No repair needed."
+      no:
+        action: "Flip inconsistent normals"
+        tool: "trimesh.repair.fix_normals()"
+    no:
+      question: "Are there holes in the mesh?"
+      yes:
+        action: "Fill holes"
+        tool: "trimesh.repair.fill_holes()"
+      no:
+        question: "Are there duplicate faces?"
+        yes:
+          action: "Remove duplicate faces"
+          tool: "mesh.merge_vertices() then mesh.update_faces()"
+        no:
+          action: "Run full repair pipeline"
+          tool: "trimesh.repair.fix_winding() + fill_holes()"

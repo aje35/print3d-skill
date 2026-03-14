@@ -1,0 +1,29 @@
+metadata:
+  type: design_rules
+  topic: minimum_dimensions
+  modes: [create]
+  materials: []
+  printers: []
+  version: "1.0"
+
+data:
+  description: "Minimum printable dimensions for FDM printers"
+  rules:
+    - name: min_wall_thickness
+      value_mm: 0.8
+      notes: "Minimum 2x nozzle width (0.4mm nozzle). Thinner walls may not print."
+    - name: min_hole_diameter
+      value_mm: 2.0
+      notes: "Holes smaller than 2mm may close during printing."
+    - name: min_detail_size
+      value_mm: 0.4
+      notes: "Features smaller than nozzle diameter will not resolve."
+    - name: min_bridge_length
+      value_mm: 10.0
+      notes: "Bridges longer than 10mm may sag without support."
+    - name: max_overhang_angle_deg
+      value: 45
+      notes: "Overhangs greater than 45 degrees need support structures."
+    - name: min_layer_height
+      value_mm: 0.1
+      notes: "Standard FDM minimum. Some printers can do 0.05mm."
