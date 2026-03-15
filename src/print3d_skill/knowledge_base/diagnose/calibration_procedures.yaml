@@ -1,0 +1,311 @@
+metadata:
+  type: calibration_procedure
+  topic: calibration_procedures
+  modes: [diagnose]
+  version: "1.0"
+
+data:
+  description: "Calibration procedures for FDM 3D printers, mapped to defect categories they resolve"
+  procedures:
+    - name: Flow Rate Calibration
+      description: >
+        Adjusts the extrusion multiplier (flow rate) so the printer deposits
+        the correct volume of filament per unit length. Incorrect flow causes
+        over- or under-extrusion artifacts visible on walls, top surfaces,
+        and dimensional accuracy.
+      when_to_run:
+        - over_extrusion
+        - under_extrusion
+        - inconsistent_extrusion
+        - dimensional_inaccuracy
+        - rough_top_surfaces
+        - layer_lines_visible
+        - weak_parts
+      steps:
+        - "Load the filament you intend to calibrate and let the hotend reach printing temperature for 5 minutes to stabilize."
+        - "Print a single-wall cube (no infill, no top/bottom layers) at 20 mm x 20 mm x 20 mm with your current flow rate setting."
+        - "Measure the wall thickness at multiple points on each side using digital calipers. Take at least 8 measurements and average them."
+        - "Calculate the corrected flow rate: new_flow = (expected_wall_thickness / measured_wall_thickness) * current_flow_percent."
+        - "Update the extrusion multiplier (flow rate) in your slicer profile to the calculated value."
+        - "Print the single-wall cube again with the new flow rate and re-measure to verify."
+        - "If measurements are within 0.02 mm of the target wall thickness (equal to one nozzle diameter), the calibration is complete."
+        - "Save the calibrated flow rate value in your slicer profile for this filament and nozzle combination."
+      printer_type_variants:
+        direct_drive: "Direct drive extruders typically need flow rates between 95-100%. Shorter filament path means less compression variability."
+        bowden: "Bowden setups often need slightly higher flow rates (98-105%) to compensate for tube flex and compression. Recalibrate if you change tube length or fittings."
+      verification_criteria: "Single-wall thickness measures within 0.02 mm of the nozzle diameter. Top surfaces appear smooth with no gaps between lines and no ridging from excess material."
+      estimated_time: "20-30 minutes"
+      difficulty: beginner
+
+    - name: E-Steps Calibration
+      description: >
+        Calibrates the number of motor steps the extruder takes to feed
+        exactly 1 mm of filament. This is a firmware-level setting that
+        ensures the physical filament movement matches what the firmware
+        commands. Must be done before flow rate calibration.
+      when_to_run:
+        - over_extrusion
+        - under_extrusion
+        - inconsistent_extrusion
+        - dimensional_inaccuracy
+      steps:
+        - "Remove the bowden tube from the extruder (bowden) or disconnect the hotend from the extruder assembly (direct drive) so you can measure filament movement at the extruder gear without resistance."
+        - "Heat the hotend to printing temperature (required by most firmware to allow extrusion commands)."
+        - "Mark the filament exactly 120 mm above the extruder intake point using a permanent marker and calipers."
+        - "Send the G-code command 'M83' to set the extruder to relative mode, then 'G1 E100 F100' to extrude 100 mm of filament at a slow feed rate."
+        - "Wait for the extrusion to complete. Measure the distance from the mark to the extruder intake point."
+        - "Calculate actual extruded length: actual_extruded = 120 - measured_remaining_distance."
+        - "Retrieve the current e-steps value with 'M503' (look for the M92 line, E value)."
+        - "Calculate corrected e-steps: new_esteps = current_esteps * (100 / actual_extruded)."
+        - "Set the new value with 'M92 Ennn.nn' where nnn.nn is your calculated value, then save with 'M500'."
+        - "Repeat the 100 mm extrusion test to verify. The measured extrusion should now be within 0.5 mm of 100 mm."
+      printer_type_variants:
+        direct_drive: "Disconnect the hotend or filament path after the extruder gears. Typical e-steps values range from 90-150 for geared extruders like the BMG (415 steps/mm for BMG clones)."
+        bowden: "Disconnect the bowden tube at the extruder end. Do not measure with the tube attached, as tube friction introduces error. Typical e-steps are 90-100 for standard extruders, 400-420 for geared."
+      verification_criteria: "Three consecutive 100 mm extrusion tests each measure between 99.5 mm and 100.5 mm of actual filament fed."
+      estimated_time: "15-20 minutes"
+      difficulty: intermediate
+
+    - name: PID Tuning - Hotend
+      description: >
+        Runs an automatic PID (Proportional-Integral-Derivative) tuning cycle
+        on the hotend heater to determine optimal control parameters. Proper
+        PID tuning eliminates temperature oscillation and ensures stable
+        nozzle temperatures, which directly affects extrusion consistency
+        and print quality.
+      when_to_run:
+        - temperature_fluctuation
+        - inconsistent_extrusion
+        - stringing
+        - blobbing
+        - layer_adhesion_failure
+        - heat_creep
+      steps:
+        - "Ensure the part cooling fan is off and the printer is at room temperature before starting."
+        - "Connect to the printer via a terminal (OctoPrint, Pronterface, or Klipper console)."
+        - "Send the PID auto-tune command for your target temperature: 'M303 E0 S210 C8' (Marlin) where S is the target temp and C is the number of cycles, or 'PID_CALIBRATE HEATER=extruder TARGET=210' (Klipper)."
+        - "Wait for the tuning to complete (3-10 minutes). The hotend will cycle above and below the target temperature multiple times."
+        - "Record the output Kp, Ki, and Kd values from the terminal output."
+        - "For Marlin: apply with 'M301 Pxx.xx Ixx.xx Dxx.xx' then save with 'M500'. For Klipper: the values are written automatically; run 'SAVE_CONFIG' to persist."
+        - "After saving, set the hotend to the target temperature and monitor for 5 minutes. Temperature should stabilize within +/- 0.5 C."
+      printer_type_variants:
+        direct_drive: "Run the tuning with the part cooling fan at the speed you typically print at for a second round, as fan airflow affects hotend temperature stability on some direct drive setups."
+        bowden: "Standard procedure applies. Bowden systems are less affected by fan proximity to the hotend."
+      verification_criteria: "Hotend temperature holds within +/- 1 C of the target after reaching equilibrium. No visible oscillation pattern in the temperature graph over a 5-minute observation window."
+      estimated_time: "10-15 minutes"
+      difficulty: beginner
+
+    - name: PID Tuning - Heated Bed
+      description: >
+        Runs an automatic PID tuning cycle on the heated bed to optimize
+        temperature control. Stable bed temperatures prevent warping,
+        improve first layer adhesion, and reduce thermal stress in
+        large prints.
+      when_to_run:
+        - warping
+        - bed_adhesion_failure
+        - elephant_foot
+        - first_layer_issues
+        - temperature_fluctuation
+      steps:
+        - "Ensure the bed is clean and at room temperature. Remove any print from the bed."
+        - "Connect to the printer via a terminal (OctoPrint, Pronterface, or Klipper console)."
+        - "Send the bed PID auto-tune command: 'M303 E-1 S60 C8' (Marlin, where E-1 designates the bed) or 'PID_CALIBRATE HEATER=heater_bed TARGET=60' (Klipper). Set S to your most common bed temperature."
+        - "Wait for the tuning to complete. Bed PID tuning takes longer than hotend tuning (5-15 minutes) due to the larger thermal mass."
+        - "Record the output Kp, Ki, and Kd values from the terminal."
+        - "For Marlin: apply with 'M304 Pxx.xx Ixx.xx Dxx.xx' then save with 'M500'. For Klipper: run 'SAVE_CONFIG' to persist the auto-written values."
+        - "Set the bed to the target temperature and monitor. Allow 10 minutes for the bed to fully stabilize due to its thermal mass."
+        - "Verify stability by checking the temperature graph shows no oscillation greater than +/- 1 C after the initial ramp-up."
+      printer_type_variants:
+        direct_drive: "No variant needed. Bed PID is independent of extruder type."
+        bowden: "No variant needed. Bed PID is independent of extruder type."
+      verification_criteria: "Bed temperature holds within +/- 1 C of target after a 10-minute stabilization period. Temperature graph shows smooth convergence without oscillation."
+      estimated_time: "15-25 minutes"
+      difficulty: beginner
+
+    - name: Bed Leveling / Tramming
+      description: >
+        Adjusts the build plate so it is parallel to the printhead's XY
+        motion plane at a consistent distance from the nozzle across the
+        entire print area. Proper bed leveling is the most fundamental
+        calibration and affects every print. Includes both manual tramming
+        (adjusting corner screws) and automatic bed leveling probe
+        calibration.
+      when_to_run:
+        - first_layer_issues
+        - bed_adhesion_failure
+        - uneven_first_layer
+        - nozzle_too_close
+        - nozzle_too_far
+        - warping
+        - elephant_foot
+      steps:
+        - "Preheat the bed to your typical printing temperature (e.g., 60 C for PLA) and wait 10 minutes for thermal expansion to stabilize."
+        - "Home all axes with G28. If you have an ABL probe, this also establishes the probe reference point."
+        - "Disable steppers with M84 (if doing manual leveling) or begin the ABL sequence."
+        - "For manual leveling: place a sheet of standard copy paper (0.1 mm thick) between the nozzle and bed at each of the four corners. Adjust the corner knobs until you feel light resistance when sliding the paper."
+        - "Repeat the four-corner check at least twice, as adjusting one corner affects the others. Move to center and check there as well."
+        - "For automatic bed leveling (ABL): run the probe sequence (G29 for Marlin, BED_MESH_CALIBRATE for Klipper). Ensure the probe is clean and the bed surface is free of debris."
+        - "After ABL probing, verify the mesh by inspecting the height map. Maximum deviation across the bed should ideally be under 0.1 mm after tramming. If deviation exceeds 0.3 mm, physically tram the bed first, then re-probe."
+        - "Save the mesh: M500 (Marlin) or SAVE_CONFIG (Klipper). Ensure your start G-code loads the mesh (M420 S1 for Marlin or BED_MESH_PROFILE LOAD=default for Klipper)."
+        - "Print a first-layer test pattern (large single-layer square or grid) to visually confirm uniform squish across the entire bed."
+      printer_type_variants:
+        direct_drive: "Direct drive printhead is heavier, so move slowly during manual paper test to avoid false readings from head flex. Some direct drive printers need more frequent re-leveling due to the heavier carriage."
+        bowden: "Lighter printhead makes manual paper-feel test slightly more consistent. Standard procedure applies."
+      verification_criteria: "First layer test print shows uniform line width and opacity across the entire bed. No areas where filament fails to stick or where lines are visibly squished flat. ABL mesh deviation under 0.15 mm after tramming."
+      estimated_time: "15-30 minutes"
+      difficulty: beginner
+
+    - name: Retraction Tower Test
+      description: >
+        Prints a test tower that varies retraction distance (and optionally
+        speed) across its height to find the optimal retraction settings
+        that eliminate stringing and oozing without causing jams or
+        under-extrusion after travel moves.
+      when_to_run:
+        - stringing
+        - oozing
+        - blobbing
+        - zits_on_surface
+        - under_extrusion_after_travel
+        - clogging
+      steps:
+        - "Download or generate a retraction test tower model. Models with separate columns and gaps between them work best for evaluating stringing."
+        - "Slice the tower with your current profile. Set the initial retraction distance to your starting guess (0.5 mm for direct drive, 3 mm for bowden)."
+        - "Configure the slicer or post-processing script to increase retraction distance by a set increment at each height interval (e.g., +0.5 mm every 10 mm of height)."
+        - "Print the tower at your normal printing temperature for the loaded filament. Do not use a draft or fast profile; use your standard quality settings."
+        - "After printing, examine each section of the tower for stringing between the columns. Note the height range where stringing first disappears."
+        - "Identify the optimal retraction distance: the lowest value that produces no visible stringing. Higher is not better, as excessive retraction causes clogs and gaps."
+        - "Optionally, run a second tower varying retraction speed (20-60 mm/s in increments) while keeping the distance fixed at the value you just found."
+        - "Update your slicer profile with the optimal retraction distance and speed for this filament."
+      printer_type_variants:
+        direct_drive: "Start at 0.2 mm and test up to 2.0 mm in 0.2 mm increments. Speeds of 25-45 mm/s are typical. Never exceed 3 mm retraction distance on direct drive to avoid heat creep zone jams."
+        bowden: "Start at 2 mm and test up to 8 mm in 1 mm increments. Higher speeds (40-70 mm/s) are often needed. Longer bowden tubes require more retraction. Replace the bowden tube if optimal retraction exceeds 7 mm."
+      verification_criteria: "No visible stringing between tower columns at the selected retraction distance. No signs of under-extrusion, clicking, or gaps in the walls at or near the selected value."
+      estimated_time: "30-45 minutes"
+      difficulty: beginner
+
+    - name: Temperature Tower Test
+      description: >
+        Prints a multi-section tower where each section is printed at a
+        different hotend temperature. Used to find the optimal nozzle
+        temperature for a specific filament, balancing layer adhesion,
+        stringing, bridging, overhang quality, and surface finish.
+      when_to_run:
+        - stringing
+        - poor_layer_adhesion
+        - poor_bridging
+        - poor_overhangs
+        - rough_surface_finish
+        - weak_parts
+        - blobbing
+        - heat_creep
+      steps:
+        - "Download or generate a temperature tower model that includes test features: bridges, overhangs, stringing columns, and text labels for each temperature."
+        - "Slice the tower with your current profile at an initial temperature at the high end of the filament's rated range (e.g., 220 C for PLA)."
+        - "Add temperature change commands at each section boundary using your slicer's post-processing feature or a script. Decrease by 5 C per section."
+        - "Verify the G-code contains the correct M104/M109 commands at the right layer heights before printing."
+        - "Print the tower. Do not adjust any settings during the print."
+        - "Examine each section systematically: check bridging droopiness, overhang curling, stringing between test columns, surface smoothness, and text legibility."
+        - "Perform a break test on the tower by snapping sections apart. Note which temperatures produce the strongest layer bonds (hardest to break)."
+        - "Select the temperature that offers the best overall balance of quality. If in doubt, lean toward the temperature with better layer adhesion."
+        - "Update your slicer filament profile with the optimal temperature."
+      printer_type_variants:
+        direct_drive: "Standard procedure. Direct drive hotends may be slightly more sensitive to temperature changes due to shorter melt zone."
+        bowden: "Standard procedure. All-metal bowden hotends sometimes perform better 5 C cooler than PTFE-lined variants."
+      verification_criteria: "Selected temperature section shows: clean bridges with minimal droop, overhangs up to 45 degrees with no curling, no stringing, smooth surface finish, and strong layer adhesion that resists snapping."
+      estimated_time: "45-60 minutes"
+      difficulty: beginner
+
+    - name: First Layer Calibration
+      description: >
+        Fine-tunes the Z-offset and first layer print settings to achieve
+        optimal adhesion and dimensional accuracy for the critical first
+        layer. This calibration builds on bed leveling by adjusting the
+        precise nozzle-to-bed distance during printing.
+      when_to_run:
+        - first_layer_issues
+        - bed_adhesion_failure
+        - elephant_foot
+        - nozzle_too_close
+        - nozzle_too_far
+        - warping
+        - dimensional_inaccuracy
+      steps:
+        - "Ensure bed leveling/tramming is already completed and the bed mesh is loaded."
+        - "Preheat the printer to your target printing temperatures and allow 5 minutes for thermal stabilization."
+        - "Start a first layer calibration print: a large, single-layer square (80 mm x 80 mm) or a pattern that covers most of the bed."
+        - "While the first layer prints, use babystepping (available in most firmware and controlled via the LCD or terminal) to adjust Z-offset in real time. Decrease Z-offset (nozzle closer) in 0.02 mm increments if filament is not sticking. Increase Z-offset (nozzle farther) if lines are too squished or transparent."
+        - "Observe the extruded lines: they should be slightly wider than the nozzle diameter, uniformly opaque, and lightly squished so adjacent lines bond without gaps."
+        - "After finding the right offset, note the babystepping value and add it to your Z-offset in firmware or slicer settings."
+        - "Print the first layer test again without babystepping to verify the saved offset is correct."
+        - "Optionally adjust first layer flow rate (typically 100-110%) and first layer speed (typically 50-75% of normal speed) if adhesion or accuracy needs further tuning."
+      printer_type_variants:
+        direct_drive: "Heavier carriage may cause slight Z variation at direction changes. Print the test at reduced speed (20-25 mm/s) for the most consistent first layer."
+        bowden: "Standard procedure. Bowden systems may need slightly higher first layer flow (102-108%) to compensate for tube elasticity at the start of extrusion."
+      verification_criteria: "First layer lines are uniformly opaque, slightly wider than nozzle diameter, and bond to each other with no gaps or ridging. The layer peels off the bed in one piece when cold but adheres firmly during printing. No elephant foot visible on the edges."
+      estimated_time: "15-25 minutes"
+      difficulty: beginner
+
+    - name: Pressure Advance / Linear Advance Calibration
+      description: >
+        Calibrates the firmware's pressure advance algorithm, which
+        compensates for the compressibility of molten filament in the
+        hotend and extruder system. Proper pressure advance eliminates
+        bulging at corners, blobbing at line starts, and thinning at
+        high-speed segments. Called Linear Advance (LA) in Marlin and
+        Pressure Advance (PA) in Klipper.
+      when_to_run:
+        - corner_bulging
+        - blobbing
+        - inconsistent_extrusion
+        - ringing_at_corners
+        - line_width_variation
+        - seam_artifacts
+        - over_extrusion_at_corners
+      steps:
+        - "Ensure e-steps and flow rate are already calibrated. Pressure advance relies on accurate baseline extrusion."
+        - "For Klipper: navigate to the Klipper docs pressure advance page and generate a test print using the built-in tuning tower macro. Set PA range from 0.0 to 0.1 for direct drive or 0.0 to 1.5 for bowden."
+        - "For Marlin: enable Linear Advance in firmware (if not already compiled in) and generate a K-factor test pattern from the Marlin Linear Advance calibration site. Set K range from 0 to 0.12 for direct drive or 0 to 2.0 for bowden."
+        - "Print the test pattern at your normal print speed and temperature. Do not use adaptive layer height or variable speed features during this test."
+        - "Examine the printed pattern. Each line is printed with a different pressure advance value. Look for the line where the width is most consistent from start to end and corners are sharpest without bulging."
+        - "Note the K/PA value for the best line. It is common for the optimal value to fall between lines; interpolate if needed."
+        - "Apply the value: 'SET_PRESSURE_ADVANCE ADVANCE=0.xxx' then 'SAVE_CONFIG' (Klipper), or 'M900 Kx.xxx' then 'M500' (Marlin)."
+        - "Print a calibration cube or Benchy to verify corners are sharp, lines are consistent width, and no blobbing occurs at direction changes."
+      printer_type_variants:
+        direct_drive: "Typical PA/K values range from 0.02-0.08. Direct drive systems have less filament compression, so the value is low. Use a test range of 0.0-0.1 with 0.005 increments."
+        bowden: "Typical PA/K values range from 0.3-1.5 depending on tube length. Longer tubes need higher values. Values above 2.0 usually indicate a mechanical issue (worn tube, loose fittings). Use a test range of 0.0-2.0 with 0.05 increments."
+      verification_criteria: "Corners of a test cube are sharp with no bulging or rounding. Extrusion width is consistent along straight segments and through speed changes. No blobbing at the start of lines after travel moves."
+      estimated_time: "30-45 minutes"
+      difficulty: intermediate
+
+    - name: Input Shaper / Resonance Compensation Calibration
+      description: >
+        Measures and compensates for mechanical resonances in the printer
+        frame and motion system that cause ringing (ghosting) artifacts
+        on printed surfaces. Uses an accelerometer to measure vibration
+        frequencies, then configures firmware filters to cancel them.
+        Primarily used with Klipper firmware, though Marlin has experimental
+        support (Fixed-Time Motion).
+      when_to_run:
+        - ringing_ghosting
+        - surface_ripples
+        - corner_artifacts
+        - vibration_artifacts
+        - print_speed_limited
+      steps:
+        - "Mount an ADXL345 accelerometer to the printhead. Secure it firmly with screws (not tape) for accurate readings. Connect to the printer's MCU via SPI."
+        - "Configure the accelerometer in your Klipper printer.cfg with the correct SPI bus and chip select pin. Verify the connection with 'ACCELEROMETER_QUERY' and confirm readings are returned."
+        - "Run the X-axis resonance test: 'TEST_RESONANCES AXIS=X'. The printer will vibrate the X axis across a range of frequencies while recording accelerometer data."
+        - "Run the Y-axis resonance test: 'TEST_RESONANCES AXIS=Y'. This tests the bed or gantry axis."
+        - "Process the results by running the Klipper calibrate_shaper.py script on the generated CSV files. The script recommends a shaper type (ZV, MZV, EI, 2HUMP_EI, or 3HUMP_EI) and frequency for each axis."
+        - "Review the recommendations. MZV and EI are common choices. The script also shows the maximum recommended acceleration for each shaper. Higher max accel means less smoothing of sharp features."
+        - "Apply the recommended values in printer.cfg under [input_shaper]: set shaper_type_x, shaper_freq_x, shaper_type_y, and shaper_freq_y."
+        - "Print a ringing test model (a cube with sharp corners at moderate to high speed) to verify ghosting is eliminated."
+        - "Optionally re-run pressure advance calibration after input shaper, as the shaper can slightly affect optimal PA values."
+      printer_type_variants:
+        direct_drive: "The heavier printhead on direct drive printers typically produces lower resonance frequencies (30-50 Hz on X). This is normal. The shaper may recommend lower maximum accelerations compared to bowden setups."
+        bowden: "Lighter printhead usually yields higher resonance frequencies (50-80 Hz on X). Bowden printers often achieve higher maximum accelerations after shaper calibration, enabling faster printing."
+      verification_criteria: "Ringing test cube shows no visible ghosting or ripples after sharp corners, even at accelerations of 3000-5000 mm/s^2. Surface quality is smooth on flat walls adjacent to corners."
+      estimated_time: "30-60 minutes"
+      difficulty: advanced

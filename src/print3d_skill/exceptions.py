@@ -129,6 +129,10 @@ class ValidationError(Print3DSkillError):
         super().__init__(message)
 
 
+class DiagnosisError(Print3DSkillError):
+    """Raised when the diagnosis pipeline encounters an error."""
+
+
 class PrinterError(Print3DSkillError):
     """Raised when printer communication fails.
 

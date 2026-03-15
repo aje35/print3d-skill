@@ -1,0 +1,415 @@
+metadata:
+  type: material_properties
+  topic: material_failure_modes
+  modes: [diagnose]
+  version: "1.0"
+
+data:
+  description: "Material-specific failure modes, environmental sensitivities, and defect-targeted fix settings for FDM diagnosis"
+  materials:
+    - name: PLA
+      common_failures:
+        - stringing
+        - layer_adhesion
+        - warping
+        - blobs_and_zits
+        - elephant_foot
+        - heat_creep
+      temperature_sensitivity: >
+        PLA has a narrow optimal window. Below 190C under-extrusion and poor
+        layer adhesion appear. Above 220C stringing and oozing increase sharply,
+        and sustained printing above 230C risks heat creep that leads to nozzle
+        jams. Ambient temperatures above 28C can soften the filament path and
+        cause grinding on direct-drive extruders.
+      humidity_sensitivity:
+        level: low
+        description: >
+          PLA is mildly hygroscopic. After prolonged exposure (weeks in open
+          air above 50% RH) it absorbs enough moisture to cause occasional
+          popping, surface roughness, and slight stringing. Freshly opened
+          PLA rarely shows moisture symptoms.
+      recommended_settings:
+        stringing:
+          retraction_distance_direct_drive_mm: 1.0
+          retraction_distance_bowden_mm: 5.0
+          retraction_speed_mm_s: 45
+          hotend_temp_c: 195
+          travel_speed_mm_s: 150
+          combing_mode: within_infill
+          wipe_distance_mm: 2.0
+          notes: "Lower temp is the single most effective fix for PLA stringing"
+        layer_adhesion:
+          hotend_temp_c: 215
+          print_speed_mm_s: 40
+          fan_speed_percent: 60
+          layer_height_mm: 0.2
+          notes: "Increase temp by 5-10C and reduce speed; too much cooling prevents bonding"
+        warping:
+          bed_temp_c: 65
+          hotend_temp_c: 210
+          first_layer_speed_mm_s: 20
+          fan_speed_first_layers_percent: 0
+          fan_speed_first_layer_count: 3
+          enclosure_recommended: false
+          brim_width_mm: 8
+          notes: "PLA warping is rare and usually indicates poor bed adhesion or drafts"
+        blobs_and_zits:
+          retraction_distance_direct_drive_mm: 1.0
+          retraction_speed_mm_s: 45
+          coast_distance_mm: 0.2
+          wipe_distance_mm: 2.0
+          outer_wall_speed_mm_s: 30
+          seam_position: sharpest_corner
+          notes: "Coasting and wiping at seam points are most effective for PLA"
+        elephant_foot:
+          bed_temp_c: 55
+          first_layer_flow_percent: 95
+          elephant_foot_compensation_mm: 0.2
+          initial_layer_height_mm: 0.2
+          notes: "Reduce bed temp and enable elephant foot compensation in slicer"
+        heat_creep:
+          hotend_temp_c: 200
+          retraction_distance_direct_drive_mm: 0.8
+          max_retraction_count: 10
+          print_speed_mm_s: 50
+          notes: "Check hotend fan is at 100%; heat creep occurs when cold zone warms above Tg (60C for PLA)"
+      environmental_factors:
+        humidity_threshold_percent: 50
+        ambient_temp_range_c: "15-28"
+        storage_notes: "Store in sealed bag with desiccant. Shelf life is long if kept dry. Avoid direct sunlight which causes embrittlement."
+      drying_procedures:
+        - step: "Place spool in food dehydrator or filament dryer"
+        - step: "Set temperature to 45C (do not exceed 50C or spool may deform)"
+        - step: "Dry for 4-6 hours"
+        - step: "Weigh spool before and after; expect 1-3g loss if moisture was present"
+        - step: "Print a test cube and listen for popping; if present, dry 2 more hours"
+      cross_material_notes: >
+        When switching from PETG to PLA, purge at least 50mm of filament to
+        clear the higher-temp residue. PLA left in a hot nozzle above 230C
+        during PETG or ABS printing will carbonize and cause dark specks.
+        After printing ABS, drop bed temp before loading PLA to avoid warping
+        the PLA spool contact point.
+
+    - name: PETG
+      common_failures:
+        - stringing
+        - blobs_and_zits
+        - layer_adhesion
+        - elephant_foot
+        - warping
+        - poor_bridging
+      temperature_sensitivity: >
+        PETG requires higher temps than PLA (220-250C) and is very sensitive
+        to over-extrusion. Even 5C above optimal causes dramatic stringing.
+        Below 225C layers may not bond and parts become brittle. PETG is also
+        sensitive to cooling: too much fan causes layer splitting, too little
+        causes drooping and poor overhangs.
+      humidity_sensitivity:
+        level: medium
+        description: >
+          PETG absorbs moisture faster than PLA. At 60% RH or above, noticeable
+          degradation occurs within 1-2 weeks: bubbling, popping during extrusion,
+          cloudy finish, and dramatically increased stringing. Dry PETG is far
+          easier to print cleanly.
+      recommended_settings:
+        stringing:
+          retraction_distance_direct_drive_mm: 1.2
+          retraction_distance_bowden_mm: 5.5
+          retraction_speed_mm_s: 40
+          hotend_temp_c: 225
+          travel_speed_mm_s: 180
+          z_hop_mm: 0.2
+          combing_mode: within_infill
+          notes: "PETG strings aggressively; lower temp to 225C and increase travel speed; z-hop helps with nozzle drags"
+        blobs_and_zits:
+          retraction_distance_direct_drive_mm: 1.5
+          retraction_speed_mm_s: 40
+          coast_distance_mm: 0.3
+          wipe_distance_mm: 3.0
+          outer_wall_speed_mm_s: 25
+          pressure_advance: 0.05
+          seam_position: sharpest_corner
+          notes: "Linear/pressure advance is very effective for PETG blobs; tune PA before other settings"
+        layer_adhesion:
+          hotend_temp_c: 240
+          print_speed_mm_s: 35
+          fan_speed_percent: 30
+          layer_height_mm: 0.2
+          notes: "PETG needs less fan than PLA for good adhesion; 30% is a good starting point"
+        elephant_foot:
+          bed_temp_c: 75
+          first_layer_flow_percent: 93
+          elephant_foot_compensation_mm: 0.25
+          initial_layer_height_mm: 0.2
+          z_offset_adjustment_mm: 0.02
+          notes: "PETG is sticky and prone to elephant foot; slight z-offset increase and lower flow help"
+        warping:
+          bed_temp_c: 80
+          hotend_temp_c: 235
+          first_layer_speed_mm_s: 20
+          enclosure_recommended: false
+          brim_width_mm: 6
+          notes: "PETG warps less than ABS but large flat parts still benefit from a brim"
+        poor_bridging:
+          fan_speed_percent: 80
+          bridge_speed_mm_s: 20
+          bridge_flow_percent: 95
+          hotend_temp_c: 225
+          notes: "Crank fan to 80% for bridges only; PETG droops without aggressive cooling on unsupported spans"
+      environmental_factors:
+        humidity_threshold_percent: 45
+        ambient_temp_range_c: "18-30"
+        storage_notes: "Store sealed with desiccant. PETG absorbs moisture noticeably within days in humid environments. Vacuum-sealed bags are strongly recommended."
+      drying_procedures:
+        - step: "Place spool in filament dryer or oven"
+        - step: "Set temperature to 65C (do not exceed 70C)"
+        - step: "Dry for 4-6 hours"
+        - step: "Test by extruding into air and listening for pops; surface should be smooth and glossy"
+        - step: "If still popping, continue drying up to 8 hours total"
+      cross_material_notes: >
+        PETG sticks to PEI build plates aggressively. Use a release agent
+        (glue stick or Windex) on smooth PEI to prevent surface damage. When
+        switching from PLA, purge thoroughly at PETG temps — PLA residue at
+        235C will burn and contaminate. PETG and PLA should not be mixed in
+        multi-material setups due to incompatible temperature ranges.
+
+    - name: ABS
+      common_failures:
+        - warping
+        - layer_splitting
+        - stringing
+        - elephant_foot
+        - surface_cracking
+        - fumes_and_odor
+      temperature_sensitivity: >
+        ABS requires high temps (230-260C hotend, 90-110C bed) and is extremely
+        sensitive to temperature fluctuations. A 5C draft can cause warping or
+        layer splits mid-print. The material has a high glass transition
+        temperature (105C), meaning enclosure temps of 40-60C are beneficial.
+        Too-low nozzle temps cause severe layer adhesion failure; too-high
+        causes excessive stringing and oozing.
+      humidity_sensitivity:
+        level: medium
+        description: >
+          ABS is moderately hygroscopic. Absorbed moisture manifests as surface
+          bubbles, popping during extrusion, and degraded layer bonding. In
+          humid environments (above 50% RH), quality degrades within 1-2 weeks.
+          Dry ABS prints noticeably better with cleaner surfaces and stronger
+          layer adhesion.
+      recommended_settings:
+        warping:
+          bed_temp_c: 105
+          hotend_temp_c: 245
+          first_layer_speed_mm_s: 15
+          fan_speed_percent: 0
+          enclosure_recommended: true
+          enclosure_target_temp_c: 45
+          brim_width_mm: 10
+          bed_adhesion: "ABS slurry or glue stick on PEI"
+          notes: "Enclosure is critical; even a cardboard box helps. ABS slurry (ABS dissolved in acetone) is the best bed adhesion method"
+        layer_splitting:
+          hotend_temp_c: 250
+          print_speed_mm_s: 40
+          fan_speed_percent: 0
+          enclosure_recommended: true
+          layer_height_mm: 0.2
+          extrusion_width_mm: 0.45
+          notes: "Zero fan, high temp, and enclosure are mandatory. Layer splitting is almost always caused by drafts or insufficient temperature"
+        stringing:
+          retraction_distance_direct_drive_mm: 0.8
+          retraction_distance_bowden_mm: 5.0
+          retraction_speed_mm_s: 40
+          hotend_temp_c: 235
+          travel_speed_mm_s: 150
+          wipe_distance_mm: 2.0
+          notes: "ABS strings less than PETG at correct temps; keep retraction short to avoid jams in enclosed printers"
+        elephant_foot:
+          bed_temp_c: 95
+          first_layer_flow_percent: 92
+          elephant_foot_compensation_mm: 0.2
+          initial_layer_height_mm: 0.2
+          notes: "High bed temps worsen elephant foot; reduce bed temp to 95C for first few layers if possible"
+        surface_cracking:
+          hotend_temp_c: 250
+          print_speed_mm_s: 35
+          fan_speed_percent: 0
+          enclosure_recommended: true
+          infill_percent: 20
+          notes: "Cracks form from thermal stress. Slow printing, zero fan, and stable enclosure temp are the fix. Thick walls (3+ perimeters) help"
+        fumes_and_odor:
+          notes: "ABS emits styrene fumes. Use enclosure with carbon filter or vent outdoors. Not a print quality issue but a health consideration for diagnosis context"
+      environmental_factors:
+        humidity_threshold_percent: 45
+        ambient_temp_range_c: "20-35"
+        storage_notes: "Store sealed with desiccant. ABS is less sensitive than PETG but still benefits from dry storage. Avoid UV exposure which yellows and embrittles the material."
+      drying_procedures:
+        - step: "Place spool in filament dryer or oven"
+        - step: "Set temperature to 80C"
+        - step: "Dry for 4-6 hours"
+        - step: "ABS tolerates higher drying temps than PLA/PETG; 80C is safe"
+        - step: "Check for bubbling by extruding a strand in air; should be smooth and consistent diameter"
+      cross_material_notes: >
+        When switching from PLA or PETG to ABS, purge extensively (100mm+)
+        at ABS temps to clear lower-temp residue. PLA residue will carbonize
+        at 245C and cause clogs. After ABS printing, the nozzle often retains
+        residue that contaminates lighter-colored filaments. Consider a cold
+        pull with nylon to clean the nozzle between material changes.
+
+    - name: TPU
+      common_failures:
+        - stringing
+        - under_extrusion
+        - blobs_and_zits
+        - poor_layer_adhesion
+        - grinding_filament
+        - inconsistent_extrusion
+      temperature_sensitivity: >
+        TPU prints in the 220-250C range depending on hardness (softer TPUs
+        need lower temps). Temperature changes have a large effect on flow
+        behavior because TPU's viscosity is very temperature-dependent.
+        Over-temperature causes extreme stringing and oozing; under-temperature
+        causes incomplete melting, under-extrusion, and extruder grinding.
+        Bed temp is less critical (40-60C) but helps first-layer adhesion.
+      humidity_sensitivity:
+        level: high
+        description: >
+          TPU is highly hygroscopic and degrades rapidly when exposed to
+          moisture. Wet TPU produces bubbles, popping, inconsistent extrusion,
+          and a rough matte surface. Even 2-3 days of exposure in moderate
+          humidity (50% RH) can measurably affect print quality. Many TPU
+          print failures are misdiagnosed when the root cause is moisture.
+      recommended_settings:
+        stringing:
+          retraction_distance_direct_drive_mm: 0.5
+          retraction_distance_bowden_mm: 2.0
+          retraction_speed_mm_s: 20
+          hotend_temp_c: 220
+          travel_speed_mm_s: 100
+          print_speed_mm_s: 25
+          notes: "Minimize retraction — too much causes buckling in the extruder. Speed reduction is more effective than retraction for TPU stringing"
+        under_extrusion:
+          hotend_temp_c: 235
+          print_speed_mm_s: 20
+          flow_rate_percent: 105
+          retraction_distance_direct_drive_mm: 0.3
+          notes: "Slow down first. TPU compresses in the filament path; excessive speed causes under-extrusion. Check for filament wrapping around extruder gear"
+        blobs_and_zits:
+          retraction_distance_direct_drive_mm: 0.5
+          retraction_speed_mm_s: 20
+          coast_distance_mm: 0.4
+          outer_wall_speed_mm_s: 20
+          print_speed_mm_s: 25
+          notes: "Coasting is very effective for TPU. Keep speeds low and consistent; acceleration changes cause pressure fluctuations"
+        poor_layer_adhesion:
+          hotend_temp_c: 235
+          print_speed_mm_s: 20
+          fan_speed_percent: 30
+          layer_height_mm: 0.2
+          notes: "TPU bonds well at correct temps. Poor adhesion usually means temp too low or speed too high. Reduce fan — TPU does not need heavy cooling"
+        grinding_filament:
+          print_speed_mm_s: 15
+          retraction_distance_direct_drive_mm: 0.3
+          retraction_speed_mm_s: 15
+          extruder_tension: "reduce to minimum that still grips"
+          notes: "Softer TPUs (below 85A) grind easily. Reduce speed, retraction, and extruder tension. Bowden systems are very difficult with soft TPU"
+        inconsistent_extrusion:
+          print_speed_mm_s: 20
+          hotend_temp_c: 230
+          flow_rate_percent: 105
+          notes: "Check filament path for binding. TPU has high friction and any kinks, tight bends, or dirty PTFE tubes cause inconsistency. Direct drive is strongly recommended"
+      environmental_factors:
+        humidity_threshold_percent: 40
+        ambient_temp_range_c: "18-30"
+        storage_notes: "Store in airtight container with desiccant at all times. Print from a dry box if possible. TPU deteriorates faster than any common filament in open air."
+      drying_procedures:
+        - step: "Place spool in filament dryer"
+        - step: "Set temperature to 55C (do not exceed 60C; spool may deform)"
+        - step: "Dry for 6-8 hours; TPU absorbs deep and needs longer than PLA"
+        - step: "For severe moisture, dry up to 12 hours"
+        - step: "Best practice: print directly from dryer using a dry box setup"
+      cross_material_notes: >
+        TPU residue in the nozzle is very sticky and hard to purge. When
+        switching away from TPU, purge at least 100mm of the next filament
+        at a higher temp. A cold pull with nylon is recommended to fully
+        clear TPU. When switching to TPU, ensure the filament path is
+        completely unobstructed — TPU will find and exploit any gap between
+        the extruder gear and the nozzle (especially on bowden setups).
+
+    - name: ASA
+      common_failures:
+        - warping
+        - layer_splitting
+        - stringing
+        - surface_roughness
+        - elephant_foot
+        - fumes_and_odor
+      temperature_sensitivity: >
+        ASA prints similarly to ABS (235-260C hotend, 90-110C bed) but is
+        slightly more forgiving on temperature consistency. Still requires
+        an enclosure for reliable results. ASA's key advantage over ABS is
+        UV resistance, but it is equally sensitive to drafts and ambient
+        temperature fluctuations during printing. Under-temperature causes
+        poor layer bonding and a matte, rough surface.
+      humidity_sensitivity:
+        level: medium
+        description: >
+          ASA absorbs moisture at roughly the same rate as ABS. Wet ASA shows
+          surface bubbling, popping, and reduced layer adhesion. In humid
+          environments (above 50% RH), quality degrades within 1-2 weeks.
+          Drying before use is recommended whenever the spool has been
+          exposed for more than a few days.
+      recommended_settings:
+        warping:
+          bed_temp_c: 105
+          hotend_temp_c: 250
+          first_layer_speed_mm_s: 15
+          fan_speed_percent: 0
+          enclosure_recommended: true
+          enclosure_target_temp_c: 45
+          brim_width_mm: 10
+          notes: "Nearly identical to ABS warping mitigation. Enclosure is mandatory for parts larger than 50mm in any dimension"
+        layer_splitting:
+          hotend_temp_c: 255
+          print_speed_mm_s: 40
+          fan_speed_percent: 0
+          enclosure_recommended: true
+          layer_height_mm: 0.2
+          notes: "Zero fan and enclosed environment. ASA splits less than ABS in stable conditions but is equally vulnerable to drafts"
+        stringing:
+          retraction_distance_direct_drive_mm: 0.8
+          retraction_distance_bowden_mm: 5.0
+          retraction_speed_mm_s: 40
+          hotend_temp_c: 240
+          travel_speed_mm_s: 150
+          wipe_distance_mm: 2.0
+          notes: "ASA strings similarly to ABS. Keep retraction short in enclosed printers to avoid jams from heat creep"
+        surface_roughness:
+          hotend_temp_c: 250
+          print_speed_mm_s: 35
+          fan_speed_percent: 10
+          outer_wall_speed_mm_s: 25
+          notes: "A tiny amount of fan (5-10%) can improve ASA surface finish without causing splitting. Test on small parts first"
+        elephant_foot:
+          bed_temp_c: 95
+          first_layer_flow_percent: 92
+          elephant_foot_compensation_mm: 0.2
+          initial_layer_height_mm: 0.2
+          notes: "Same approach as ABS. High bed temps exacerbate elephant foot; reduce if dimensionally critical"
+        fumes_and_odor:
+          notes: "ASA emits fumes similar to ABS (styrene-based). Use enclosure with filtration or vent to outside. Slightly less odor than ABS but still requires ventilation"
+      environmental_factors:
+        humidity_threshold_percent: 45
+        ambient_temp_range_c: "20-35"
+        storage_notes: "Store sealed with desiccant. ASA has better UV stability than ABS but similar moisture sensitivity. Printed parts resist UV degradation well, making ASA ideal for outdoor use."
+      drying_procedures:
+        - step: "Place spool in filament dryer or oven"
+        - step: "Set temperature to 80C"
+        - step: "Dry for 4-6 hours"
+        - step: "Same drying profile as ABS; ASA tolerates 80C without spool deformation"
+        - step: "Extrude test strand and check for bubbles or popping"
+      cross_material_notes: >
+        ASA behaves almost identically to ABS in terms of material transitions.
+        Purge thoroughly when switching from PLA or PETG. ASA and ABS can be
+        swapped with minimal purging as their temperature ranges overlap. When
+        switching from ASA to PLA, allow the hotend to cool before loading PLA
+        to avoid heat-degrading the PLA in the melt zone.

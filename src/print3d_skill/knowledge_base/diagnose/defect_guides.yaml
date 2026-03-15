@@ -1,0 +1,382 @@
+metadata:
+  type: defect_guide
+  topic: print_defect_identification
+  modes: [diagnose]
+  materials: []
+  printers: []
+  version: "1.0"
+
+data:
+  description: "Comprehensive defect identification guides for diagnosing 3D print failures from photos and descriptions. Each category includes visual indicators, spatial patterns, and photo cues to support AI-assisted diagnosis."
+
+  categories:
+    stringing:
+      name: "Stringing / Oozing"
+      severity: functional
+      visual_indicators:
+        - "Thin hair-like filament threads stretched between separate parts of the print"
+        - "Wispy cobweb-like strands bridging gaps in the geometry"
+        - "Small blobs or bumps at travel move start and end points"
+        - "Fine filament whiskers protruding from outer walls near travel paths"
+        - "Accumulated thin threads forming a web-like mesh between towers or pillars"
+      common_causes:
+        - "Retraction distance too short — filament continues to ooze during travel moves"
+        - "Nozzle temperature too high — reduces filament viscosity and increases ooze"
+        - "Travel speed too slow — gives more time for molten filament to drip"
+        - "Retraction speed too slow — filament is not pulled back quickly enough"
+        - "Wet filament — absorbed moisture boils and creates irregular extrusion and ooze"
+      spatial_patterns:
+        localized: "Stringing in one area suggests geometry with many small islands or narrow gaps that require frequent travel moves. Check if the affected section has thin features or separate columns."
+        regional: "Regional stringing often corresponds to a section of the print where the part geometry creates longer travel moves, such as between arms of a figurine or posts on a PCB holder."
+        global: "Global stringing across the entire print points to a fundamental retraction or temperature issue rather than geometry-specific problems. Check retraction settings and nozzle temperature."
+      photo_cues:
+        - "Look for thin, translucent threads visible when the print is backlit or photographed against a contrasting background"
+        - "Check for small raised dots or pimples on the surface where travel moves begin and end"
+        - "Observe whether strings connect two distinct features or are random wisps hanging from surfaces"
+      related_defects:
+        - zits_blobs
+        - over_extrusion
+      severity_modifiers:
+        - "Severity increases to print_stopping if stringing is excessive and causes nozzle collisions with accumulated material"
+        - "Severity reduces to cosmetic if strings are very fine and easily removed by hand or with a heat gun"
+
+    layer_shift:
+      name: "Layer Shift"
+      severity: print_stopping
+      visual_indicators:
+        - "Sudden horizontal offset of all layers above a certain height, creating a visible step or ledge in the print"
+        - "Layers shifted consistently in one axis (X or Y) while the other axis remains aligned"
+        - "Repeating periodic shifts creating a zigzag or staircase pattern up the print"
+        - "Partial shift where only a few layers are offset before returning to the correct position"
+      common_causes:
+        - "Loose belt on the X or Y axis — belt tension insufficient to hold position under acceleration"
+        - "Stepper motor skipping steps due to excessive speed, acceleration, or current too low"
+        - "Mechanical obstruction — cable snag, loose connector, or debris on a rail"
+        - "Print head collision with a curled-up section of the print"
+        - "Grub screw loose on the motor pulley, causing the pulley to slip on the shaft"
+      spatial_patterns:
+        localized: "A single shift at one height usually indicates a one-time event: a collision with a curled section, a momentary cable snag, or a stepper driver overheating and recovering."
+        regional: "Multiple shifts in a region suggest repeated collisions, often from a section of the print that is warping upward and catching the nozzle during travel moves."
+        global: "Consistent shifting throughout the print indicates a chronic mechanical issue: loose belt, failing stepper driver, or insufficient motor current for the configured acceleration."
+      photo_cues:
+        - "Look for a clean horizontal line where all upper layers are uniformly displaced sideways from the lower layers"
+        - "Check if the shift is only in one direction (X or Y) which identifies the affected axis"
+        - "Observe whether the shifted section shows any signs of the nozzle dragging across the surface, which indicates a collision-triggered shift"
+      related_defects:
+        - warping
+        - ghosting
+      severity_modifiers:
+        - "A single small shift (under 1mm) in a non-structural area may be cosmetic if the part is still dimensionally usable"
+        - "Periodic recurring shifts indicate imminent print failure and should be treated as critical"
+
+    warping:
+      name: "Warping / Curling"
+      severity: print_stopping
+      visual_indicators:
+        - "Corners or edges of the print lifting away from the build plate, curling upward"
+        - "Visible gap between the first layer and the bed surface at the part perimeter"
+        - "Upper layers curling inward or outward due to differential cooling and thermal contraction"
+        - "Cracking or splitting between layers at the curled region from internal stress"
+        - "Deformed flat surfaces that should be planar but show a bowl or saddle shape"
+      common_causes:
+        - "Bed temperature too low — insufficient thermal bonding to the surface"
+        - "Insufficient first-layer adhesion — bed not clean, wrong surface, or first layer too high"
+        - "Excessive thermal contraction — high-shrinkage materials (ABS, Nylon) without an enclosure"
+        - "Part cooling fan too strong on early layers — rapid cooling increases internal stress"
+        - "Large flat geometry with no stress-relief features (chamfers, brims, mouse ears)"
+      spatial_patterns:
+        localized: "Warping at a single corner or edge suggests uneven bed heating, a draft from one side, or that specific corner having the thinnest cross-section and cooling fastest."
+        regional: "Warping along one side of the print often indicates a temperature gradient across the bed, a cooling fan blowing preferentially from that direction, or proximity to an enclosure opening."
+        global: "Global warping on all corners and edges is a material or environment issue — the bed temperature is too low for the material, the ambient temperature is too cold, or an enclosure is needed."
+      photo_cues:
+        - "Look for visible light passing under the corners of the print where it has separated from the bed"
+        - "Check for a curved or bowed bottom surface when the print is placed on a flat reference surface"
+        - "Observe whether cracks appear at the boundary between the lifted and adhered regions"
+      related_defects:
+        - bed_adhesion_failure
+        - layer_separation
+        - elephant_foot
+      severity_modifiers:
+        - "Minor corner lift (under 0.5mm) on a tall print may be cosmetic if the part is otherwise dimensionally acceptable"
+        - "Warping that causes the nozzle to collide with raised edges escalates to immediate print failure"
+        - "On enclosed printers with ABS, slight warping may self-correct as the chamber heats up"
+
+    under_extrusion:
+      name: "Under-Extrusion"
+      severity: print_stopping
+      visual_indicators:
+        - "Gaps between adjacent extrusion lines on top surfaces, showing the infill pattern beneath"
+        - "Thin, weak walls that appear translucent or have visible voids between perimeters"
+        - "Missing or incomplete layers where the extruder failed to deposit enough material"
+        - "Surface texture shows individual extrusion lines that do not fully bond to their neighbors"
+        - "Rough, porous surface with a starved, matte appearance instead of smooth continuous lines"
+      common_causes:
+        - "Partial nozzle clog — debris or carbonized filament partially blocking the melt zone"
+        - "Incorrect flow rate or extrusion multiplier — under-multiplied extrusion volume"
+        - "Filament grinding — extruder gear has chewed into the filament and lost grip"
+        - "PTFE tube gap or heat break issue — filament jams intermittently in the cold end"
+        - "Filament diameter inconsistency — actual diameter smaller than the slicer expects"
+      spatial_patterns:
+        localized: "Localized under-extrusion at specific features (thin walls, small perimeters) suggests the slicer is requesting moves faster than the hotend can melt filament, or pressure advance is misconfigured."
+        regional: "Under-extrusion in a region (e.g., one side of the print) may indicate a partial clog that worsens at certain retraction patterns, or heat creep affecting specific travel paths."
+        global: "Global under-extrusion across the entire print indicates a systemic issue: incorrect e-steps, wrong filament diameter setting, partial clog, or insufficient hotend temperature."
+      photo_cues:
+        - "Look for visible gaps between extrusion lines on flat top surfaces, showing the layer or infill below"
+        - "Check for walls that appear thin, translucent, or show light passing through when backlit"
+        - "Observe whether the surface has a consistent rough/starved texture or if it alternates between normal and starved sections"
+      related_defects:
+        - layer_separation
+        - stringing
+      severity_modifiers:
+        - "Mild under-extrusion (small gaps on top surfaces only) may be functional if wall thickness is adequate"
+        - "Severe under-extrusion with missing layers is structurally dangerous and always print_stopping"
+        - "Intermittent under-extrusion that worsens over time suggests a progressive clog and imminent failure"
+
+    over_extrusion:
+      name: "Over-Extrusion"
+      severity: functional
+      visual_indicators:
+        - "Bulging or swollen outer walls that exceed the intended dimensions of the model"
+        - "Excessive material on top surfaces creating a rough, uneven, or pillowed texture"
+        - "Blobs and zits at seam locations from excess pressure in the nozzle"
+        - "Layer lines appear wider and flatter than normal, with material squishing outward"
+        - "Internal features (holes, slots) appear undersized because excess material encroaches inward"
+      common_causes:
+        - "Flow rate or extrusion multiplier set too high in the slicer"
+        - "E-steps calibrated too high — extruder pushes more filament than commanded"
+        - "Nozzle temperature too high — filament is overly fluid and expands beyond the intended line width"
+        - "Filament diameter larger than the slicer profile expects"
+        - "Printing too slowly — excess dwell time allows too much material to accumulate per unit length"
+      spatial_patterns:
+        localized: "Over-extrusion at specific features (small holes, thin walls) suggests the slicer is not reducing flow for small perimeters, or linear advance is not compensating for pressure buildup in tight corners."
+        regional: "Regional over-extrusion in one area may indicate the part cooling fan is not reaching that section, causing the material to remain fluid longer and spread more."
+        global: "Global over-extrusion uniformly across the print is a calibration issue — flow rate, e-steps, or filament diameter settings need correction."
+      photo_cues:
+        - "Look for walls that bulge outward, especially at corners where excess material accumulates"
+        - "Check top surfaces for an uneven, rough texture with material piling up rather than laying flat"
+        - "Observe whether holes and internal features are visibly smaller than intended, with material encroaching inward"
+      related_defects:
+        - zits_blobs
+        - elephant_foot
+        - stringing
+      severity_modifiers:
+        - "Mild over-extrusion (1-3% excess) may be cosmetic only, producing slightly rough surfaces but acceptable dimensions"
+        - "Severe over-extrusion can cause nozzle collisions with accumulated material, escalating to print_stopping"
+        - "Over-extrusion on parts with tight mechanical tolerances is always functional severity or higher"
+
+    bed_adhesion_failure:
+      name: "Bed Adhesion Failure"
+      severity: print_stopping
+      visual_indicators:
+        - "Print has fully detached from the build plate and is being dragged around by the nozzle"
+        - "First layer is peeling up at corners or edges while printing continues above"
+        - "Spaghetti-like mess of extruded filament where the print detached and the nozzle kept extruding into air"
+        - "First layer lines are not bonded to the bed and can be peeled off with no resistance"
+        - "Skirt or brim is lifting, indicating the first layer will also fail to adhere"
+      common_causes:
+        - "Bed not level — nozzle too far from the bed for the first layer to squish and bond"
+        - "Bed surface not clean — oils, dust, or residue from previous prints preventing adhesion"
+        - "Bed temperature incorrect for the material — too low for bonding, too high for PLA"
+        - "First layer speed too fast — not enough time for the material to bond to the surface"
+        - "Wrong bed surface for the material — smooth PEI for a material that needs textured PEI or glue stick"
+      spatial_patterns:
+        localized: "Adhesion failure at one spot usually indicates a local bed leveling issue — that area is too far from the nozzle or has a surface imperfection (scratch, residue, worn coating)."
+        regional: "Regional adhesion failure along one edge or side suggests the bed is tilted in that direction, or a draft is cooling that side faster than the rest."
+        global: "Global adhesion failure across the entire first layer indicates the nozzle is too far from the bed everywhere, the bed surface is contaminated, or the bed temperature is fundamentally wrong for the material."
+      photo_cues:
+        - "Look for the print completely detached from the bed, often with a tangled mass of filament above it"
+        - "Check for curled-up first layer edges that show a gap between the print and the bed surface"
+        - "Observe whether the bottom of the print shows a smooth, well-squished first layer or a rough, poorly bonded texture"
+      related_defects:
+        - warping
+        - elephant_foot
+      severity_modifiers:
+        - "Partial adhesion failure caught early may be recoverable by pausing and applying adhesive"
+        - "Complete detachment always results in total print failure"
+        - "Adhesion failure on a brim rather than the part itself may allow the print to continue"
+
+    elephant_foot:
+      name: "Elephant Foot"
+      severity: functional
+      visual_indicators:
+        - "Bottom 1-3 layers of the print are visibly wider than the layers above, creating a flared base"
+        - "First layer squished outward beyond the intended footprint of the model"
+        - "A visible bulge or lip at the base of the print where it meets the build plate"
+        - "Parts that should fit together are too tight at the base but correct higher up"
+      common_causes:
+        - "Nozzle too close to the bed — first layer is over-squished, forcing material outward"
+        - "Bed temperature too high — bottom layers remain soft and deform under the weight of layers above"
+        - "First layer flow rate too high — excess material on the first layer spreads outward"
+        - "Insufficient cooling on first layers — material stays molten and deforms under compression"
+        - "Heavy or tall print pressing down on still-soft bottom layers"
+      spatial_patterns:
+        localized: "Elephant foot on one side but not the other indicates the bed is not level — the nozzle is closer on the affected side."
+        regional: "Elephant foot more pronounced on one region suggests uneven bed heating, with the hotter zone keeping the material softer longer."
+        global: "Uniform elephant foot around the entire base is a bed temperature, first-layer height, or flow rate issue affecting the whole first layer equally."
+      photo_cues:
+        - "Look for a visible flare or lip at the very bottom of the print, best seen in a side-profile photo"
+        - "Check whether the bottom edge extends beyond the walls above it when viewed from directly above"
+        - "Observe whether the elephant foot is uniform around the perimeter or more pronounced on one side"
+      related_defects:
+        - over_extrusion
+        - warping
+        - bed_adhesion_failure
+      severity_modifiers:
+        - "Elephant foot on decorative parts may be cosmetic only"
+        - "Elephant foot on parts that must fit into assemblies or enclosures is always functional severity"
+        - "Severe elephant foot (more than 0.5mm flare) can prevent mating parts from assembling"
+
+    poor_bridging:
+      name: "Poor Bridging"
+      severity: functional
+      visual_indicators:
+        - "Sagging or drooping filament strands on unsupported horizontal spans between two anchor points"
+        - "Rough or stringy underside on horizontal overhangs that bridge a gap"
+        - "Visible drooping curves on what should be flat horizontal surfaces spanning open space"
+        - "Broken or incomplete bridges where filament strands failed to reach the opposite anchor"
+        - "Uneven surface above a bridge due to the first bridging layer being irregular"
+      common_causes:
+        - "Bridge speed too slow — filament sags under gravity before solidifying"
+        - "Part cooling fan speed too low during bridging — filament does not solidify fast enough to hold tension"
+        - "Bridge flow rate too high — excess material weighs the strand down causing more sag"
+        - "Bridge distance too long for the material and settings — exceeds the material's maximum bridging capability"
+        - "Nozzle temperature too high — reduces filament viscosity and increases sag on spans"
+      spatial_patterns:
+        localized: "Poor bridging on one specific span while others are fine suggests that particular gap is too long, has inadequate anchor geometry, or the cooling fan cannot reach it."
+        regional: "Regional bridging failures in one section may indicate the part cooling fan is directional and cannot cool that area effectively, or the geometry creates difficult bridging angles."
+        global: "Globally poor bridging on all spans indicates bridge speed, fan speed, or flow rate settings need adjustment for the material."
+      photo_cues:
+        - "Look for sagging filament strands hanging below the intended bridge plane, visible from below or at an angle"
+        - "Check the underside of horizontal spans for a rough, stringy, or droopy texture compared to supported surfaces"
+        - "Observe whether the bridge sag is uniform or worse in the center of the span (catenary droop)"
+      related_defects:
+        - stringing
+        - under_extrusion
+        - support_scarring
+      severity_modifiers:
+        - "Minor bridge sag (under 0.5mm) on non-visible internal features may be cosmetic"
+        - "Bridge failure on structural spans that must bear load is always functional or higher"
+        - "Complete bridge failure where strands break mid-span escalates to print_stopping if subsequent layers have no foundation"
+
+    support_scarring:
+      name: "Support Scarring"
+      severity: cosmetic
+      visual_indicators:
+        - "Rough, pitted, or textured surface on areas where support structures were removed"
+        - "Small nubs or remnants of support interface material left on the print surface"
+        - "Visible line or boundary between the support-contacted surface and the clean unsupported surface"
+        - "Gouges or divots in the print surface from aggressive support removal"
+        - "Whitish stress marks on the surface from bending or tearing supports away"
+      common_causes:
+        - "Support interface gap (Z distance) too small — support bonds too tightly to the print surface"
+        - "Support interface density too high — too much contact area makes clean removal difficult"
+        - "Support material same as print material — no chemical or thermal separation method available"
+        - "Aggressive manual support removal technique — tools dig into or gouge the print surface"
+        - "Support interface pattern not optimized — lines pattern bonds more than grid or concentric"
+      spatial_patterns:
+        localized: "Scarring in one area indicates that specific overhang needed support and the interface settings were not tuned for clean release at that angle or surface area."
+        regional: "Regional scarring on one face of the print suggests that face required extensive support, and the support interface settings need adjustment for large contact areas."
+        global: "Scarring on all supported surfaces points to a fundamental support interface configuration issue — Z distance too tight or interface density too high across the board."
+      photo_cues:
+        - "Look for surface texture differences between supported and unsupported faces of the same print"
+        - "Check for small raised bumps or nubs where individual support contact points were torn away"
+        - "Observe whether the scarring shows a regular pattern (matching the support interface pattern) or irregular damage from manual removal"
+      related_defects:
+        - poor_bridging
+        - elephant_foot
+      severity_modifiers:
+        - "Support scarring on internal or hidden surfaces is negligible"
+        - "Scarring on visible or cosmetic surfaces where appearance matters increases to functional severity"
+        - "Deep gouges from removal that compromise wall thickness or structural integrity escalate to functional severity"
+
+    layer_separation:
+      name: "Layer Separation / Delamination"
+      severity: print_stopping
+      visual_indicators:
+        - "Visible crack or gap running horizontally between two layers of the print"
+        - "Layers peeling apart when force is applied, showing weak inter-layer bonding"
+        - "A horizontal line where the print appears to have split, with a visible seam between upper and lower sections"
+        - "Layers above the split point shifted or misaligned slightly from the layers below"
+        - "Print breaking cleanly along layer lines with minimal force, indicating nearly zero inter-layer adhesion"
+      common_causes:
+        - "Nozzle temperature too low — insufficient heat to bond the new layer to the layer below"
+        - "Layer height too large for the nozzle diameter — not enough squish to fuse layers together"
+        - "Part cooling fan too aggressive — cools the previous layer too much before the next layer is deposited"
+        - "Print paused or interrupted — the existing layers cool completely, preventing bonding when resumed"
+        - "Draft or enclosure door opened — sudden temperature drop causes thermal shock and delamination"
+      spatial_patterns:
+        localized: "Delamination at a single height often corresponds to a pause, power interruption, or a specific layer where the geometry changed dramatically (e.g., transitioning from solid to sparse infill)."
+        regional: "Regional delamination on one side suggests a draft or uneven cooling from that direction, or the part geometry creating a thermal stress concentration on that face."
+        global: "Global weak layer adhesion throughout the print indicates the nozzle temperature is too low, the layer height is too large, or the cooling is too aggressive for the material."
+      photo_cues:
+        - "Look for a clean horizontal crack or gap that runs along the layer boundary, visible as a dark line in the print"
+        - "Check if the print can be separated by hand at the crack, indicating poor inter-layer bonding"
+        - "Observe whether the fracture surface is smooth (adhesive failure between layers) or rough (partial bonding with tearing)"
+      related_defects:
+        - warping
+        - under_extrusion
+      severity_modifiers:
+        - "Hairline layer separation visible only under close inspection may be cosmetic if the part is not load-bearing"
+        - "Any layer separation on structural or load-bearing parts is always print_stopping severity"
+        - "Layer separation that propagates during printing will cause complete print failure"
+
+    zits_blobs:
+      name: "Zits and Blobs"
+      severity: cosmetic
+      visual_indicators:
+        - "Small raised bumps or pimples on the outer surface of the print, typically at layer start/end points"
+        - "A visible vertical seam line of small bumps running up the print where each layer starts"
+        - "Random small blobs scattered across the surface, not aligned to a seam"
+        - "Larger blob at the Z-seam location where retraction and travel move artifacts accumulate"
+        - "Slightly raised or indented marks at points where the nozzle paused or changed direction"
+      common_causes:
+        - "Retraction settings not optimized — excess pressure in the nozzle creates a blob at the start of each layer"
+        - "Z-seam alignment set to random — distributes artifacts across the surface instead of hiding them on a single seam line"
+        - "Coasting and wipe settings not enabled or not tuned — nozzle oozes at layer transitions"
+        - "Linear advance or pressure advance not calibrated — pressure buildup causes over-extrusion at direction changes"
+        - "Nozzle temperature too high — excess ooze at every travel move and layer change"
+      spatial_patterns:
+        localized: "Blobs at a single location on each layer (vertical line of bumps) indicate the Z-seam position — this is normal but can be minimized with seam placement and retraction tuning."
+        regional: "Blobs concentrated in one region suggest that section has many travel moves, retractions, or direction changes that are generating artifacts."
+        global: "Blobs scattered across the entire surface indicate a pressure management issue — linear advance needs calibration, or retraction and temperature settings need adjustment."
+      photo_cues:
+        - "Look for small raised dots on the surface, best visible under raking side-light that casts shadows from the bumps"
+        - "Check for a vertical line of bumps running up one edge of the print, indicating the Z-seam location"
+        - "Observe whether blobs are uniform in size and spacing (systematic cause) or random (ooze or moisture issue)"
+      related_defects:
+        - stringing
+        - over_extrusion
+      severity_modifiers:
+        - "Zits on hidden or internal surfaces are negligible"
+        - "Large blobs that interfere with part fitment or mechanical function escalate to functional severity"
+        - "Blobs caused by wet filament will be accompanied by popping sounds and surface roughness, addressing moisture resolves both"
+
+    ghosting:
+      name: "Ghosting / Ringing"
+      severity: cosmetic
+      visual_indicators:
+        - "Ripple-like echoes or shadows of sharp features repeated on flat surfaces adjacent to corners or edges"
+        - "Wavy surface texture on walls that should be smooth, especially near sharp direction changes"
+        - "Faint copies of text, logos, or geometric features appearing as ripples on nearby flat areas"
+        - "Periodic ridges or undulations on the surface, spaced regularly and fading with distance from the feature that caused them"
+      common_causes:
+        - "Print speed too high for the printer's mechanical rigidity — frame vibrations propagate to the nozzle"
+        - "Acceleration and jerk settings too high — sudden direction changes excite resonant vibrations"
+        - "Loose belts — allow the print head to oscillate after direction changes before damping out"
+        - "Heavy print head or direct-drive extruder — increased inertia amplifies vibrations at direction changes"
+        - "Input shaper not enabled or not calibrated — firmware cannot compensate for mechanical resonance"
+      spatial_patterns:
+        localized: "Ghosting visible only near sharp corners or text indicates the vibration is triggered by sudden direction changes at those features and the printer's deceleration is not damped quickly enough."
+        regional: "Ghosting more visible on walls facing one axis direction suggests the belt tension or frame rigidity differs between the X and Y axes."
+        global: "Ghosting on all surfaces and at all heights indicates the print speed, acceleration, or jerk settings exceed the printer's mechanical capability, or a fundamental rigidity issue exists."
+      photo_cues:
+        - "Look for faint ripple patterns on flat walls adjacent to sharp corners, best visible under side lighting"
+        - "Check whether the ripples are evenly spaced and decay in amplitude with distance from the triggering feature (classic ringing pattern)"
+        - "Observe whether the ghosting is more prominent on walls perpendicular to one axis, indicating which axis has the vibration problem"
+      related_defects:
+        - layer_shift
+        - zits_blobs
+      severity_modifiers:
+        - "Mild ghosting visible only under specific lighting conditions is purely cosmetic"
+        - "Severe ghosting with visible surface waviness that can be felt by touch may indicate loose mechanical components that could eventually cause layer shifts"
+        - "Ghosting accompanied by audible vibration or rattling during printing suggests a mechanical issue that should be addressed to prevent future failures"

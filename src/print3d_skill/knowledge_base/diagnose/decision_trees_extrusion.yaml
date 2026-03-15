@@ -1,0 +1,959 @@
+metadata:
+  type: decision_tree
+  topic: extrusion_defect_diagnosis
+  modes: [diagnose]
+  version: "1.0"
+
+data:
+  description: "Decision trees for diagnosing extrusion-related print defects including stringing, under-extrusion, and over-extrusion"
+  trees:
+    stringing:
+      name: "Stringing / Oozing"
+      description: "Thin strings of filament left between travel moves, caused by molten material oozing from the nozzle during non-print moves"
+      root:
+        condition: "material_type"
+        branches:
+          PLA:
+            condition: "extruder_type"
+            branches:
+              direct_drive:
+                causes:
+                  - description: "Retraction distance too low for PLA on direct drive"
+                    likelihood: "high"
+                    contributing_factors: ["insufficient retraction", "nozzle temperature too high"]
+                    recommendations:
+                      - setting: "retraction_distance"
+                        current_issue: "Too low to relieve melt pressure"
+                        suggested_value: "1.0mm"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Direct drive needs less retraction than bowden, but 1.0mm reliably breaks the melt strand for PLA"
+                      - setting: "retraction_speed"
+                        current_issue: "Too slow to cleanly pull filament back"
+                        suggested_value: "45mm/s"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Fast retraction speed creates a clean break in the molten filament"
+                      - setting: "nozzle_temperature"
+                        current_issue: "Too high causing excessive ooze"
+                        suggested_value: "200C"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Lower temp increases melt viscosity, reducing ooze during travel"
+                      - setting: "travel_speed"
+                        current_issue: "Too slow allowing ooze to deposit"
+                        suggested_value: "150mm/s"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Faster travel moves reduce the time available for oozing"
+              bowden:
+                causes:
+                  - description: "Retraction distance too low for PLA on bowden system"
+                    likelihood: "high"
+                    contributing_factors: ["bowden tube compliance", "longer filament path"]
+                    recommendations:
+                      - setting: "retraction_distance"
+                        current_issue: "Too low to overcome bowden tube slack"
+                        suggested_value: "5.0mm"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Bowden setups need 4-7mm retraction to account for tube compression and slack"
+                      - setting: "retraction_speed"
+                        current_issue: "Too slow for bowden retraction"
+                        suggested_value: "45mm/s"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Fast retraction compensates for the delayed response in bowden systems"
+                      - setting: "nozzle_temperature"
+                        current_issue: "Running hotter than necessary for PLA"
+                        suggested_value: "200C"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Lowering temperature reduces melt fluidity and oozing tendency"
+              _default:
+                causes:
+                  - description: "Retraction settings not tuned for PLA"
+                    likelihood: "high"
+                    contributing_factors: ["retraction distance", "retraction speed", "temperature"]
+                    recommendations:
+                      - setting: "retraction_distance"
+                        current_issue: "Not calibrated for this extruder setup"
+                        suggested_value: "1.0mm (direct drive) or 5.0mm (bowden)"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Retraction distance is the primary control for stringing and must match the extruder type"
+                      - setting: "nozzle_temperature"
+                        current_issue: "May be too high for the filament brand"
+                        suggested_value: "200C"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Lower temps reduce ooze; start at the low end of the PLA range and increase if needed"
+          PETG:
+            condition: "extruder_type"
+            branches:
+              direct_drive:
+                causes:
+                  - description: "PETG is inherently stringy due to low melt viscosity"
+                    likelihood: "high"
+                    contributing_factors: ["material properties", "high print temperature", "insufficient retraction"]
+                    recommendations:
+                      - setting: "retraction_distance"
+                        current_issue: "Too low for PETG on direct drive"
+                        suggested_value: "0.8mm"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "PETG needs slightly less retraction than PLA on direct drive to avoid clogs, but enough to break the string"
+                      - setting: "retraction_speed"
+                        current_issue: "Too slow to cleanly retract PETG"
+                        suggested_value: "40mm/s"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Moderate speed prevents grinding while still creating a clean retraction"
+                      - setting: "nozzle_temperature"
+                        current_issue: "Temperature higher than needed"
+                        suggested_value: "230C"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "PETG strings more at higher temps; use the lowest temp that maintains good layer adhesion"
+                      - setting: "wipe_distance"
+                        current_issue: "No wipe configured"
+                        suggested_value: "2.0mm"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Wiping the nozzle at the end of an extrusion path cleans residual PETG before travel"
+              bowden:
+                causes:
+                  - description: "PETG stringing compounded by bowden tube delay"
+                    likelihood: "high"
+                    contributing_factors: ["material stringiness", "bowden tube compliance", "high temperature"]
+                    recommendations:
+                      - setting: "retraction_distance"
+                        current_issue: "Too low for PETG on bowden"
+                        suggested_value: "4.5mm"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "PETG on bowden needs moderate retraction; too much causes jams due to PETG heat creep"
+                      - setting: "retraction_speed"
+                        current_issue: "Too slow causing incomplete retraction"
+                        suggested_value: "40mm/s"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "PETG can grind at high retraction speeds; 40mm/s balances speed and reliability"
+                      - setting: "nozzle_temperature"
+                        current_issue: "Running too hot for acceptable stringing"
+                        suggested_value: "230C"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Lower end of PETG range reduces stringing at the cost of slightly lower layer adhesion"
+                      - setting: "z_hop"
+                        current_issue: "Not enabled or too high"
+                        suggested_value: "0.2mm"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Small z-hop prevents the nozzle from dragging through existing stringing but does not create excessive strings"
+              _default:
+                causes:
+                  - description: "PETG stringing from inherent material properties"
+                    likelihood: "high"
+                    contributing_factors: ["low melt viscosity", "high print temperature"]
+                    recommendations:
+                      - setting: "retraction_distance"
+                        current_issue: "Not tuned for PETG"
+                        suggested_value: "0.8mm (direct drive) or 4.5mm (bowden)"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "PETG requires careful retraction tuning; too much causes heat-zone jams"
+                      - setting: "nozzle_temperature"
+                        current_issue: "May be too high"
+                        suggested_value: "230C"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Use the lowest temperature that still gives good layer bonding"
+          ABS:
+            condition: "extruder_type"
+            branches:
+              direct_drive:
+                causes:
+                  - description: "ABS stringing from high print temperature and enclosed environment"
+                    likelihood: "medium"
+                    contributing_factors: ["high nozzle temperature", "enclosed chamber heat"]
+                    recommendations:
+                      - setting: "retraction_distance"
+                        current_issue: "Not optimized for ABS on direct drive"
+                        suggested_value: "0.8mm"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "ABS retraction is similar to PETG on direct drive; moderate distance prevents jams"
+                      - setting: "nozzle_temperature"
+                        current_issue: "Higher than necessary"
+                        suggested_value: "240C"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Lower end of ABS range reduces oozing while maintaining interlayer bonding"
+                      - setting: "retraction_speed"
+                        current_issue: "Too slow for clean retraction"
+                        suggested_value: "40mm/s"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Moderate retraction speed works well for ABS without risking filament grinding"
+              bowden:
+                causes:
+                  - description: "ABS stringing amplified by bowden system and enclosure heat"
+                    likelihood: "medium"
+                    contributing_factors: ["bowden compliance", "ambient heat in enclosure"]
+                    recommendations:
+                      - setting: "retraction_distance"
+                        current_issue: "Too low for ABS on bowden"
+                        suggested_value: "5.0mm"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "ABS on bowden needs typical bowden retraction distances"
+                      - setting: "retraction_speed"
+                        current_issue: "Not tuned for ABS"
+                        suggested_value: "40mm/s"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "40mm/s provides reliable retraction for ABS on bowden setups"
+              _default:
+                causes:
+                  - description: "ABS stringing from high-temperature printing"
+                    likelihood: "medium"
+                    contributing_factors: ["high nozzle temperature", "enclosed chamber"]
+                    recommendations:
+                      - setting: "retraction_distance"
+                        current_issue: "Not calibrated for ABS"
+                        suggested_value: "0.8mm (direct drive) or 5.0mm (bowden)"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "ABS retraction is straightforward; match to extruder type"
+          TPU:
+            condition: "extruder_type"
+            branches:
+              direct_drive:
+                causes:
+                  - description: "TPU stringing from material flexibility and elasticity"
+                    likelihood: "high"
+                    contributing_factors: ["material elasticity", "filament compression in extruder"]
+                    recommendations:
+                      - setting: "retraction_distance"
+                        current_issue: "Too high causing filament buckling"
+                        suggested_value: "0.5mm"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "TPU must use very short retraction on direct drive to prevent the flexible filament from buckling"
+                      - setting: "retraction_speed"
+                        current_issue: "Too fast for flexible filament"
+                        suggested_value: "25mm/s"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Slow retraction prevents TPU from compressing and jamming in the extruder gears"
+                      - setting: "travel_speed"
+                        current_issue: "Too slow allowing ooze"
+                        suggested_value: "100mm/s"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Faster travel reduces ooze time; TPU strings are soft and easily removed post-print"
+              bowden:
+                causes:
+                  - description: "TPU is extremely difficult to print without stringing on bowden"
+                    likelihood: "high"
+                    contributing_factors: ["filament compression in tube", "material elasticity", "bowden tube slack"]
+                    recommendations:
+                      - setting: "retraction_distance"
+                        current_issue: "Retraction is largely ineffective for TPU on bowden"
+                        suggested_value: "0mm"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Disabling retraction is often best for TPU on bowden; the flexible filament compresses rather than retracting"
+                      - setting: "print_speed"
+                        current_issue: "Too fast for flexible filament in bowden tube"
+                        suggested_value: "20mm/s"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Very slow speeds reduce pressure buildup and oozing in the long bowden path"
+                      - setting: "nozzle_temperature"
+                        current_issue: "Too high increasing flow"
+                        suggested_value: "225C"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Lower temperature increases viscosity, reducing ooze during travel"
+              _default:
+                causes:
+                  - description: "TPU stringing from inherent material elasticity"
+                    likelihood: "high"
+                    contributing_factors: ["flexible filament", "compression in feed path"]
+                    recommendations:
+                      - setting: "retraction_distance"
+                        current_issue: "Not tuned for flexible material"
+                        suggested_value: "0.5mm (direct drive) or 0mm (bowden)"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "TPU requires minimal or no retraction; direct drive is strongly recommended"
+          ASA:
+            condition: "extruder_type"
+            branches:
+              direct_drive:
+                causes:
+                  - description: "ASA stringing similar to ABS but at higher temperatures"
+                    likelihood: "medium"
+                    contributing_factors: ["high nozzle temperature", "enclosed environment"]
+                    recommendations:
+                      - setting: "retraction_distance"
+                        current_issue: "Not optimized for ASA"
+                        suggested_value: "0.8mm"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "ASA behaves similarly to ABS; moderate direct drive retraction is effective"
+                      - setting: "nozzle_temperature"
+                        current_issue: "Higher than necessary"
+                        suggested_value: "245C"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "ASA strings less at the lower end of its temperature range"
+                      - setting: "retraction_speed"
+                        current_issue: "Too slow for clean retraction"
+                        suggested_value: "40mm/s"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Consistent retraction speed prevents ooze during travel moves"
+              _default:
+                causes:
+                  - description: "ASA stringing from high-temperature printing in enclosed environment"
+                    likelihood: "medium"
+                    contributing_factors: ["high print temperature", "enclosed chamber heat"]
+                    recommendations:
+                      - setting: "retraction_distance"
+                        current_issue: "Not tuned for ASA"
+                        suggested_value: "0.8mm (direct drive) or 5.0mm (bowden)"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "ASA retraction is comparable to ABS; match to extruder type"
+          _default:
+            causes:
+              - description: "Stringing from inadequate retraction settings"
+                likelihood: "high"
+                contributing_factors: ["retraction distance", "retraction speed", "nozzle temperature"]
+                recommendations:
+                  - setting: "retraction_distance"
+                    current_issue: "Not calibrated for material and extruder combination"
+                    suggested_value: "1.0mm (direct drive) or 5.0mm (bowden)"
+                    impact: "high"
+                    difficulty: "easy"
+                    category: "controllable"
+                    explanation: "Retraction distance is the single most impactful setting for stringing; tune with a retraction tower test"
+                  - setting: "nozzle_temperature"
+                    current_issue: "May be higher than needed"
+                    suggested_value: "Start at low end of filament range"
+                    impact: "medium"
+                    difficulty: "easy"
+                    category: "controllable"
+                    explanation: "Lower temperature increases melt viscosity and reduces ooze"
+                  - setting: "travel_speed"
+                    current_issue: "Too slow"
+                    suggested_value: "150mm/s"
+                    impact: "medium"
+                    difficulty: "easy"
+                    category: "controllable"
+                    explanation: "Faster travel reduces the time available for filament to ooze"
+
+    under_extrusion:
+      name: "Under-Extrusion"
+      description: "Insufficient material deposited, resulting in gaps between lines, weak layers, or missing infill. The extruder fails to push enough filament to fill the planned extrusion path."
+      root:
+        condition: "material_type"
+        branches:
+          PLA:
+            condition: "extruder_type"
+            branches:
+              direct_drive:
+                causes:
+                  - description: "Partial nozzle clog or worn nozzle reducing flow"
+                    likelihood: "high"
+                    contributing_factors: ["nozzle wear", "debris accumulation", "heat creep"]
+                    recommendations:
+                      - setting: "nozzle_temperature"
+                        current_issue: "Too low causing incomplete melting"
+                        suggested_value: "210C"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Slightly higher temp ensures full melting of PLA and improves flow through a partially clogged nozzle"
+                      - setting: "print_speed"
+                        current_issue: "Too fast for the extruder to keep up"
+                        suggested_value: "50mm/s"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Reducing speed gives the extruder more time to push filament through the nozzle"
+                      - setting: "flow_rate"
+                        current_issue: "Under 100% or not calibrated"
+                        suggested_value: "100%"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Verify flow rate multiplier is at 100% and calibrate e-steps if under-extrusion persists"
+              bowden:
+                causes:
+                  - description: "Gap between bowden tube and nozzle causing filament buildup"
+                    likelihood: "high"
+                    contributing_factors: ["bowden tube not seated", "worn tube end", "heat creep in tube"]
+                    recommendations:
+                      - setting: "bowden_tube_seating"
+                        current_issue: "Gap between tube end and nozzle allowing filament to accumulate"
+                        suggested_value: "Fully seated with no gap"
+                        impact: "high"
+                        difficulty: "moderate"
+                        category: "controllable"
+                        explanation: "A gap between the bowden tube and nozzle creates a chamber where molten filament accumulates and causes intermittent clogs"
+                      - setting: "retraction_distance"
+                        current_issue: "Too high causing filament grinding"
+                        suggested_value: "5.0mm"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Excessive retraction on bowden can grind PLA filament, reducing grip and causing under-extrusion"
+                      - setting: "nozzle_temperature"
+                        current_issue: "Too low for reliable flow"
+                        suggested_value: "210C"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Slightly higher temperature compensates for heat loss in longer melt paths"
+              _default:
+                causes:
+                  - description: "PLA under-extrusion from clog, speed, or temperature issues"
+                    likelihood: "high"
+                    contributing_factors: ["partial clog", "speed too high", "temperature too low"]
+                    recommendations:
+                      - setting: "nozzle_temperature"
+                        current_issue: "May be too low for reliable flow"
+                        suggested_value: "210C"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Mid-range PLA temperature ensures consistent melting and flow"
+                      - setting: "print_speed"
+                        current_issue: "May exceed extruder volumetric limit"
+                        suggested_value: "50mm/s"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Moderate speed prevents the extruder from falling behind on filament delivery"
+          PETG:
+            condition: "extruder_type"
+            branches:
+              direct_drive:
+                causes:
+                  - description: "PETG heat creep causing soft filament to jam above the melt zone"
+                    likelihood: "high"
+                    contributing_factors: ["heat creep", "insufficient cooling on heat break", "high ambient temperature"]
+                    recommendations:
+                      - setting: "nozzle_temperature"
+                        current_issue: "Too high causing heat creep"
+                        suggested_value: "230C"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "PETG is prone to heat creep; use the minimum temperature that gives good layer adhesion"
+                      - setting: "retraction_distance"
+                        current_issue: "Too high pulling molten PETG into the cold zone"
+                        suggested_value: "0.8mm"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Excessive retraction draws molten PETG into the heat break where it solidifies and creates a partial clog"
+                      - setting: "print_speed"
+                        current_issue: "Too fast for PETG flow characteristics"
+                        suggested_value: "40mm/s"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "PETG has higher viscosity at lower temps; slower speed ensures full extrusion"
+              _default:
+                causes:
+                  - description: "PETG under-extrusion from heat creep or insufficient temperature"
+                    likelihood: "high"
+                    contributing_factors: ["heat creep", "temperature too low", "clogging"]
+                    recommendations:
+                      - setting: "nozzle_temperature"
+                        current_issue: "Not optimized for flow vs heat creep balance"
+                        suggested_value: "235C"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Mid-range PETG temperature balances flow reliability against heat creep risk"
+                      - setting: "print_speed"
+                        current_issue: "May be too fast for PETG"
+                        suggested_value: "40mm/s"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Slower speed ensures the extruder can maintain adequate flow"
+          ABS:
+            condition: "extruder_type"
+            branches:
+              direct_drive:
+                causes:
+                  - description: "ABS under-extrusion from insufficient temperature or moisture absorption"
+                    likelihood: "high"
+                    contributing_factors: ["moisture in filament", "nozzle temperature too low", "partial clog"]
+                    recommendations:
+                      - setting: "nozzle_temperature"
+                        current_issue: "Too low for full ABS flow"
+                        suggested_value: "245C"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "ABS needs higher temperatures for reliable flow; mid-range ensures consistent extrusion"
+                      - setting: "filament_drying"
+                        current_issue: "Moisture causing steam bubbles in extrudate"
+                        suggested_value: "Dry at 80C for 4 hours"
+                        impact: "high"
+                        difficulty: "moderate"
+                        category: "controllable"
+                        explanation: "ABS absorbs moisture which creates steam bubbles during extrusion, causing inconsistent flow"
+                      - setting: "print_speed"
+                        current_issue: "Too fast for the nozzle to fully melt ABS"
+                        suggested_value: "45mm/s"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "ABS has higher viscosity than PLA; moderate speed ensures full melting"
+              _default:
+                causes:
+                  - description: "ABS under-extrusion from temperature or moisture issues"
+                    likelihood: "high"
+                    contributing_factors: ["moisture absorption", "temperature too low"]
+                    recommendations:
+                      - setting: "nozzle_temperature"
+                        current_issue: "May be insufficient for ABS"
+                        suggested_value: "245C"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "ABS requires higher temperatures for reliable extrusion"
+                      - setting: "filament_drying"
+                        current_issue: "Moisture likely present in hygroscopic ABS"
+                        suggested_value: "Dry at 80C for 4 hours"
+                        impact: "high"
+                        difficulty: "moderate"
+                        category: "controllable"
+                        explanation: "Drying ABS before printing eliminates steam-related extrusion issues"
+          TPU:
+            condition: "extruder_type"
+            branches:
+              direct_drive:
+                causes:
+                  - description: "TPU under-extrusion from filament compression and buckling"
+                    likelihood: "high"
+                    contributing_factors: ["filament flexibility", "extruder tension too high", "print speed too fast"]
+                    recommendations:
+                      - setting: "print_speed"
+                        current_issue: "Too fast for flexible filament to feed reliably"
+                        suggested_value: "25mm/s"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "TPU must be printed slowly to prevent the flexible filament from buckling in the extruder"
+                      - setting: "extruder_tension"
+                        current_issue: "Too tight causing filament deformation"
+                        suggested_value: "Light spring tension"
+                        impact: "high"
+                        difficulty: "moderate"
+                        category: "controllable"
+                        explanation: "Excessive extruder gear pressure deforms TPU, reducing cross-section and causing under-extrusion"
+                      - setting: "nozzle_temperature"
+                        current_issue: "Too low for reliable TPU flow"
+                        suggested_value: "230C"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Mid-range temperature ensures TPU flows smoothly through the nozzle"
+              bowden:
+                causes:
+                  - description: "TPU under-extrusion is very common on bowden due to filament compression in tube"
+                    likelihood: "high"
+                    contributing_factors: ["filament compression in tube", "tube friction", "material flexibility"]
+                    recommendations:
+                      - setting: "print_speed"
+                        current_issue: "Much too fast for TPU on bowden"
+                        suggested_value: "15mm/s"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Extremely slow speeds are mandatory for TPU on bowden to prevent filament compression and binding"
+                      - setting: "retraction_distance"
+                        current_issue: "Any retraction causes buckling"
+                        suggested_value: "0mm"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Disable retraction entirely for TPU on bowden; the flexible filament compresses rather than retracting"
+                      - setting: "nozzle_temperature"
+                        current_issue: "Too low increasing back-pressure"
+                        suggested_value: "235C"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Higher temperature reduces melt viscosity, lowering the force needed to push TPU through the bowden path"
+              _default:
+                causes:
+                  - description: "TPU under-extrusion from flexible filament feed problems"
+                    likelihood: "high"
+                    contributing_factors: ["material flexibility", "extruder incompatibility"]
+                    recommendations:
+                      - setting: "print_speed"
+                        current_issue: "Too fast for flexible filament"
+                        suggested_value: "25mm/s (direct drive) or 15mm/s (bowden)"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "TPU requires very slow print speeds to prevent buckling and compression"
+          ASA:
+            condition: "extruder_type"
+            branches:
+              direct_drive:
+                causes:
+                  - description: "ASA under-extrusion from insufficient temperature or moisture"
+                    likelihood: "high"
+                    contributing_factors: ["temperature too low", "moisture absorption", "high viscosity"]
+                    recommendations:
+                      - setting: "nozzle_temperature"
+                        current_issue: "Too low for ASA flow"
+                        suggested_value: "250C"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "ASA prints at the higher end of its range for reliable extrusion; it is more viscous than ABS"
+                      - setting: "filament_drying"
+                        current_issue: "ASA absorbs moisture readily"
+                        suggested_value: "Dry at 80C for 4 hours"
+                        impact: "high"
+                        difficulty: "moderate"
+                        category: "controllable"
+                        explanation: "Like ABS, ASA is hygroscopic and must be dried before printing to prevent extrusion issues"
+                      - setting: "print_speed"
+                        current_issue: "Too fast for ASA viscosity"
+                        suggested_value: "40mm/s"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "ASA benefits from moderate speeds to ensure consistent extrusion at high temperatures"
+              _default:
+                causes:
+                  - description: "ASA under-extrusion from temperature or moisture"
+                    likelihood: "high"
+                    contributing_factors: ["high melting point", "hygroscopic material"]
+                    recommendations:
+                      - setting: "nozzle_temperature"
+                        current_issue: "May be too low for ASA"
+                        suggested_value: "250C"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "ASA needs temperatures at or above 245C for reliable flow"
+          _default:
+            causes:
+              - description: "Under-extrusion from clog, temperature, or speed issues"
+                likelihood: "high"
+                contributing_factors: ["partial nozzle clog", "temperature too low", "speed too high", "worn nozzle"]
+                recommendations:
+                  - setting: "nozzle_temperature"
+                    current_issue: "May be too low for the material"
+                    suggested_value: "Increase by 5-10C from current setting"
+                    impact: "high"
+                    difficulty: "easy"
+                    category: "controllable"
+                    explanation: "Insufficient temperature is the most common cause of under-extrusion; increase in small increments"
+                  - setting: "print_speed"
+                    current_issue: "May exceed the extruder volumetric flow rate"
+                    suggested_value: "40mm/s"
+                    impact: "high"
+                    difficulty: "easy"
+                    category: "controllable"
+                    explanation: "Reducing speed allows the hotend more time to melt filament and push it through the nozzle"
+                  - setting: "flow_rate"
+                    current_issue: "May be below 100% or e-steps miscalibrated"
+                    suggested_value: "100%"
+                    impact: "high"
+                    difficulty: "easy"
+                    category: "controllable"
+                    explanation: "Verify the flow rate multiplier and calibrate extruder steps per mm"
+
+    over_extrusion:
+      name: "Over-Extrusion"
+      description: "Excess material deposited causing blobs, rough surfaces, dimensional inaccuracy, and bulging layers. The extruder pushes more filament than the slicer expects."
+      root:
+        condition: "material_type"
+        branches:
+          PLA:
+            condition: "extruder_type"
+            branches:
+              direct_drive:
+                causes:
+                  - description: "Flow rate too high or e-steps over-calibrated for PLA"
+                    likelihood: "high"
+                    contributing_factors: ["flow multiplier above 100%", "e-steps too high", "filament diameter variance"]
+                    recommendations:
+                      - setting: "flow_rate"
+                        current_issue: "Above 100% or e-steps over-calibrated"
+                        suggested_value: "95%"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Reduce flow rate by 2-5% increments until lines no longer overlap; recalibrate e-steps with a 100mm extrusion test"
+                      - setting: "nozzle_temperature"
+                        current_issue: "Too high causing excessive flow"
+                        suggested_value: "200C"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Higher temperatures reduce PLA viscosity, allowing more material to flow than the slicer calculates"
+                      - setting: "line_width"
+                        current_issue: "Narrower than actual extrusion width"
+                        suggested_value: "0.44mm (for 0.4mm nozzle)"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Line width should be 105-115% of nozzle diameter; too narrow causes lines to stack and bulge"
+              _default:
+                causes:
+                  - description: "PLA over-extrusion from flow calibration or temperature"
+                    likelihood: "high"
+                    contributing_factors: ["flow rate too high", "temperature too high"]
+                    recommendations:
+                      - setting: "flow_rate"
+                        current_issue: "Not calibrated"
+                        suggested_value: "95%"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Reduce flow rate and verify with a single-wall cube calibration print"
+                      - setting: "nozzle_temperature"
+                        current_issue: "May be too high"
+                        suggested_value: "200C"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Lower temperature increases viscosity and reduces over-flow"
+          PETG:
+            condition: "extruder_type"
+            branches:
+              direct_drive:
+                causes:
+                  - description: "PETG over-extrusion from high flow and low viscosity"
+                    likelihood: "high"
+                    contributing_factors: ["flow rate too high", "PETG low viscosity at print temp", "temperature too high"]
+                    recommendations:
+                      - setting: "flow_rate"
+                        current_issue: "Too high for PETG"
+                        suggested_value: "93%"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "PETG commonly needs lower flow rates than PLA due to its lower viscosity at print temperatures"
+                      - setting: "nozzle_temperature"
+                        current_issue: "Too high reducing PETG viscosity excessively"
+                        suggested_value: "230C"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "PETG becomes very fluid at higher temperatures; lower temp improves dimensional accuracy"
+                      - setting: "line_width"
+                        current_issue: "Too narrow for actual PETG flow"
+                        suggested_value: "0.44mm (for 0.4mm nozzle)"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "PETG flows more freely than PLA; ensure line width accounts for this"
+              _default:
+                causes:
+                  - description: "PETG over-extrusion from low melt viscosity"
+                    likelihood: "high"
+                    contributing_factors: ["PETG flows easily at print temp", "flow rate not tuned"]
+                    recommendations:
+                      - setting: "flow_rate"
+                        current_issue: "Not tuned for PETG"
+                        suggested_value: "93%"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "PETG almost always requires a reduced flow rate compared to PLA defaults"
+          ABS:
+            condition: "extruder_type"
+            branches:
+              direct_drive:
+                causes:
+                  - description: "ABS over-extrusion from flow calibration in enclosed environment"
+                    likelihood: "medium"
+                    contributing_factors: ["enclosure heat reducing viscosity", "flow rate too high"]
+                    recommendations:
+                      - setting: "flow_rate"
+                        current_issue: "Not compensated for enclosure warmth"
+                        suggested_value: "95%"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Enclosed printers run warmer, reducing ABS viscosity; compensate with lower flow rate"
+                      - setting: "nozzle_temperature"
+                        current_issue: "Higher than needed in enclosed environment"
+                        suggested_value: "240C"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "In an enclosure, ABS needs less nozzle temperature because the ambient heat assists melting"
+              _default:
+                causes:
+                  - description: "ABS over-extrusion from flow or temperature"
+                    likelihood: "medium"
+                    contributing_factors: ["flow rate not calibrated", "enclosure effects"]
+                    recommendations:
+                      - setting: "flow_rate"
+                        current_issue: "Not calibrated for ABS"
+                        suggested_value: "95%"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Calibrate flow rate with a single-wall test cube for ABS"
+          TPU:
+            condition: "extruder_type"
+            branches:
+              direct_drive:
+                causes:
+                  - description: "TPU over-extrusion from filament compression storing extra pressure"
+                    likelihood: "medium"
+                    contributing_factors: ["filament compression", "delayed pressure release", "flow rate too high"]
+                    recommendations:
+                      - setting: "flow_rate"
+                        current_issue: "Too high for TPU"
+                        suggested_value: "95%"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "TPU compresses in the extruder, storing pressure that causes excess extrusion; reduce flow to compensate"
+                      - setting: "print_speed"
+                        current_issue: "Speed changes cause pressure spikes"
+                        suggested_value: "25mm/s"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Consistent slow speed prevents pressure buildup and release that causes over-extrusion at corners"
+                      - setting: "linear_advance"
+                        current_issue: "Not configured for TPU"
+                        suggested_value: "K0.0 (disable)"
+                        impact: "medium"
+                        difficulty: "moderate"
+                        category: "controllable"
+                        explanation: "Linear advance does not work well with flexible filaments and can cause extrusion inconsistency"
+              _default:
+                causes:
+                  - description: "TPU over-extrusion from material compression"
+                    likelihood: "medium"
+                    contributing_factors: ["filament flexibility", "pressure buildup"]
+                    recommendations:
+                      - setting: "flow_rate"
+                        current_issue: "Not tuned for TPU compression"
+                        suggested_value: "95%"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Reduce flow rate to account for TPU's tendency to store pressure in the feed system"
+          ASA:
+            condition: "extruder_type"
+            branches:
+              direct_drive:
+                causes:
+                  - description: "ASA over-extrusion from flow and enclosure effects"
+                    likelihood: "medium"
+                    contributing_factors: ["enclosure heat", "flow rate too high"]
+                    recommendations:
+                      - setting: "flow_rate"
+                        current_issue: "Not tuned for ASA"
+                        suggested_value: "95%"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "ASA in an enclosure flows more freely; reduce flow rate to maintain dimensional accuracy"
+                      - setting: "nozzle_temperature"
+                        current_issue: "May be too high for enclosed printing"
+                        suggested_value: "245C"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Lower end of ASA range compensates for enclosure heat"
+              _default:
+                causes:
+                  - description: "ASA over-extrusion from flow calibration"
+                    likelihood: "medium"
+                    contributing_factors: ["flow rate not calibrated"]
+                    recommendations:
+                      - setting: "flow_rate"
+                        current_issue: "Not calibrated for ASA"
+                        suggested_value: "95%"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Calibrate flow with a single-wall test cube for ASA"
+          _default:
+            causes:
+              - description: "Over-extrusion from flow rate, temperature, or e-steps miscalibration"
+                likelihood: "high"
+                contributing_factors: ["flow multiplier too high", "e-steps over-calibrated", "nozzle temperature too high"]
+                recommendations:
+                  - setting: "flow_rate"
+                    current_issue: "Above optimal value"
+                    suggested_value: "95%"
+                    impact: "high"
+                    difficulty: "easy"
+                    category: "controllable"
+                    explanation: "Start by reducing flow rate 2-5%; use a single-wall calibration cube to verify correct extrusion width"
+                  - setting: "nozzle_temperature"
+                    current_issue: "Higher than needed reducing viscosity"
+                    suggested_value: "Reduce by 5C from current setting"
+                    impact: "medium"
+                    difficulty: "easy"
+                    category: "controllable"
+                    explanation: "Lower temperature increases melt viscosity and reduces the amount of material that flows per unit time"
+                  - setting: "e_steps"
+                    current_issue: "May be over-calibrated"
+                    suggested_value: "Recalibrate with 100mm extrusion test"
+                    impact: "high"
+                    difficulty: "moderate"
+                    category: "controllable"
+                    explanation: "Mark filament 120mm above the extruder entry, extrude 100mm, and measure the remainder to verify e-steps"

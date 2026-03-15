@@ -12,12 +12,12 @@ from print3d_skill.exceptions import InvalidModeError
 
 
 class TestValidModes:
-    @pytest.mark.parametrize("mode", ["diagnose"])
-    def test_stub_mode_returns_not_implemented(self, mode):
-        response = route(mode)
-        assert response.mode == mode
-        assert response.status == "not_implemented"
-        assert mode in response.message
+    def test_diagnose_mode_returns_response(self):
+        """Diagnose mode is implemented — returns error when defects missing."""
+        response = route("diagnose")
+        assert response.mode == "diagnose"
+        assert response.status == "error"
+        assert "defects" in response.message.lower()
 
     def test_modify_mode_returns_response(self):
         """Modify mode is implemented — returns error when mesh_path is missing."""

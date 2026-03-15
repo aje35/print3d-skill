@@ -1,0 +1,949 @@
+metadata:
+  type: decision_tree
+  topic: adhesion_defect_diagnosis
+  modes: [diagnose]
+  version: "1.0"
+
+data:
+  description: "Decision trees for diagnosing bed adhesion failures, warping, and elephant foot defects"
+  trees:
+    bed_adhesion_failure:
+      name: "Bed Adhesion Failure"
+      description: "Print detaches from the build plate during printing, caused by insufficient first layer adhesion, incorrect bed temperature, or improper z-offset"
+      root:
+        condition: "material_type"
+        branches:
+          PLA:
+            condition: "enclosure_type"
+            branches:
+              open:
+                causes:
+                  - description: "PLA not adhering due to bed temperature, z-offset, or surface contamination"
+                    likelihood: "high"
+                    contributing_factors: ["bed temperature too low", "z-offset too high", "dirty bed surface", "drafts"]
+                    recommendations:
+                      - setting: "bed_temperature"
+                        current_issue: "Too low for PLA adhesion"
+                        suggested_value: "60C"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "PLA adheres well to most surfaces at 60C; ensure the bed reaches target temperature before printing"
+                      - setting: "z_offset"
+                        current_issue: "Nozzle too far from bed on first layer"
+                        suggested_value: "Adjust until slight squish visible (-0.05 to -0.15mm from current)"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "The first layer must be slightly squished into the bed for mechanical adhesion; lines should be flat, not round"
+                      - setting: "first_layer_speed"
+                        current_issue: "Too fast for proper bed adhesion"
+                        suggested_value: "20mm/s"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Slow first layer gives the filament time to bond with the bed surface and improves accuracy"
+                      - setting: "first_layer_flow"
+                        current_issue: "Insufficient material on first layer"
+                        suggested_value: "105%"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Slightly increased first layer flow helps fill the gap between nozzle and bed for better adhesion"
+                      - setting: "part_cooling_fan"
+                        current_issue: "Fan on during first layer cooling the bed surface"
+                        suggested_value: "0% for first 2 layers"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Fan cools the first layer too quickly, preventing proper bonding to the build plate"
+                  - description: "Drafts cooling the bed surface in open-frame printer"
+                    likelihood: "medium"
+                    contributing_factors: ["air currents", "AC vents nearby", "window drafts"]
+                    recommendations:
+                      - setting: "printer_location"
+                        current_issue: "Printer exposed to drafts"
+                        suggested_value: "Move away from vents, windows, and foot traffic"
+                        impact: "high"
+                        difficulty: "moderate"
+                        category: "environmental"
+                        explanation: "Air currents cause uneven cooling of the first layer, creating thermal stress that pulls the print off the bed"
+              enclosed:
+                causes:
+                  - description: "PLA adhesion failure in enclosure (less common, likely z-offset or surface)"
+                    likelihood: "medium"
+                    contributing_factors: ["z-offset too high", "bed surface contamination", "worn build plate"]
+                    recommendations:
+                      - setting: "z_offset"
+                        current_issue: "Nozzle too far from bed"
+                        suggested_value: "Adjust down by -0.05mm increments until first layer squishes"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Even in an enclosure, incorrect z-offset is the most common adhesion failure cause"
+                      - setting: "bed_surface_prep"
+                        current_issue: "Build plate contaminated with oils or residue"
+                        suggested_value: "Clean with 99% isopropyl alcohol before each print"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Fingerprints and residue from previous prints create a release layer that prevents adhesion"
+                      - setting: "bed_temperature"
+                        current_issue: "May be too high in enclosed printer causing PLA to soften too much"
+                        suggested_value: "55C"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "PLA in an enclosure may need slightly lower bed temp as the ambient heat supplements bed heating"
+              _default:
+                causes:
+                  - description: "PLA bed adhesion failure from z-offset, temperature, or surface issues"
+                    likelihood: "high"
+                    contributing_factors: ["z-offset", "bed temperature", "surface contamination"]
+                    recommendations:
+                      - setting: "bed_temperature"
+                        current_issue: "Not optimized for PLA"
+                        suggested_value: "60C"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "60C is the standard reliable bed temperature for PLA on most build surfaces"
+                      - setting: "z_offset"
+                        current_issue: "Likely too high"
+                        suggested_value: "Decrease by -0.05mm increments"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Proper z-offset creates a slightly squished first layer that grips the bed"
+          PETG:
+            condition: "enclosure_type"
+            branches:
+              open:
+                causes:
+                  - description: "PETG adhesion failure from insufficient bed temperature or z-offset"
+                    likelihood: "high"
+                    contributing_factors: ["bed temperature too low", "z-offset too high", "no bed adhesive"]
+                    recommendations:
+                      - setting: "bed_temperature"
+                        current_issue: "Too low for PETG"
+                        suggested_value: "80C"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "PETG requires higher bed temperatures than PLA; 80C provides reliable adhesion on most surfaces"
+                      - setting: "z_offset"
+                        current_issue: "Too close or too far for PETG"
+                        suggested_value: "Slightly higher than PLA setting (+0.02mm from PLA offset)"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "PETG bonds too strongly if squished too much; a slightly higher z-offset prevents parts from fusing to the bed permanently"
+                      - setting: "first_layer_speed"
+                        current_issue: "Too fast for PETG adhesion"
+                        suggested_value: "20mm/s"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Slow first layer allows PETG to flow and settle properly on the bed"
+                      - setting: "bed_surface"
+                        current_issue: "Surface may not be compatible with PETG"
+                        suggested_value: "PEI sheet or glass with glue stick"
+                        impact: "high"
+                        difficulty: "moderate"
+                        category: "controllable"
+                        explanation: "PETG adheres best to textured PEI; on glass, use a thin glue stick layer as both adhesion promoter and release agent"
+              enclosed:
+                causes:
+                  - description: "PETG adhesion failure in enclosure (uncommon, check surface)"
+                    likelihood: "low"
+                    contributing_factors: ["bed surface contamination", "z-offset issue"]
+                    recommendations:
+                      - setting: "bed_surface_prep"
+                        current_issue: "Surface contaminated or incompatible"
+                        suggested_value: "Clean with isopropyl alcohol; apply glue stick on smooth PEI"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "PETG can bond permanently to smooth PEI if too close; glue stick acts as a release agent"
+                      - setting: "bed_temperature"
+                        current_issue: "May need adjustment for enclosed environment"
+                        suggested_value: "75C"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Slightly lower bed temp in an enclosure since ambient warmth assists adhesion"
+              _default:
+                causes:
+                  - description: "PETG adhesion from bed temperature and surface issues"
+                    likelihood: "high"
+                    contributing_factors: ["bed temperature", "surface type", "z-offset"]
+                    recommendations:
+                      - setting: "bed_temperature"
+                        current_issue: "Not optimized for PETG"
+                        suggested_value: "80C"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "80C is the standard reliable bed temperature for PETG"
+                      - setting: "z_offset"
+                        current_issue: "May be too close causing permanent bonding or too high causing detachment"
+                        suggested_value: "Slightly higher than PLA setting"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "PETG needs a careful z-offset balance to adhere without bonding permanently"
+          ABS:
+            condition: "enclosure_type"
+            branches:
+              open:
+                causes:
+                  - description: "ABS adhesion failure due to thermal contraction without enclosure"
+                    likelihood: "high"
+                    contributing_factors: ["no enclosure", "rapid cooling", "thermal stress from drafts"]
+                    recommendations:
+                      - setting: "enclosure"
+                        current_issue: "No enclosure causing rapid cooling and warping"
+                        suggested_value: "Add enclosure or draft shield"
+                        impact: "high"
+                        difficulty: "hard"
+                        category: "environmental"
+                        explanation: "ABS contracts significantly when cooling; without an enclosure, thermal gradients pull corners off the bed"
+                      - setting: "bed_temperature"
+                        current_issue: "Too low for ABS"
+                        suggested_value: "100C"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "ABS requires 100C+ bed temperature to keep the base layers above glass transition and prevent contraction"
+                      - setting: "brim_width"
+                        current_issue: "No brim or brim too narrow"
+                        suggested_value: "8mm"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "A wide brim increases the contact area and resists the peeling force from ABS thermal contraction"
+                      - setting: "bed_adhesive"
+                        current_issue: "No adhesion promoter"
+                        suggested_value: "ABS slurry (ABS dissolved in acetone) or glue stick"
+                        impact: "high"
+                        difficulty: "moderate"
+                        category: "controllable"
+                        explanation: "ABS slurry creates a chemical bond between the print and bed surface that resists thermal stress"
+              enclosed:
+                causes:
+                  - description: "ABS adhesion failure in enclosure (check bed temp and surface)"
+                    likelihood: "medium"
+                    contributing_factors: ["bed temperature too low", "surface contamination", "enclosure not warm enough"]
+                    recommendations:
+                      - setting: "bed_temperature"
+                        current_issue: "Below optimal for ABS"
+                        suggested_value: "100C"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "100C ensures ABS stays above its glass transition temperature at the bed interface"
+                      - setting: "enclosure_temperature"
+                        current_issue: "Enclosure not retaining enough heat"
+                        suggested_value: "45-55C chamber temperature"
+                        impact: "high"
+                        difficulty: "moderate"
+                        category: "environmental"
+                        explanation: "A warm chamber reduces the temperature gradient between the bed and the air, minimizing thermal stress"
+                      - setting: "first_layer_speed"
+                        current_issue: "Too fast for ABS first layer"
+                        suggested_value: "15mm/s"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Very slow first layer maximizes contact time and adhesion for ABS"
+              _default:
+                causes:
+                  - description: "ABS adhesion failure from thermal stress"
+                    likelihood: "high"
+                    contributing_factors: ["thermal contraction", "bed temperature", "no enclosure"]
+                    recommendations:
+                      - setting: "bed_temperature"
+                        current_issue: "Not high enough for ABS"
+                        suggested_value: "100C"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "ABS requires 100C bed temperature to prevent thermal contraction at the base"
+                      - setting: "enclosure"
+                        current_issue: "ABS needs enclosed printing environment"
+                        suggested_value: "Use enclosure with 45-55C chamber"
+                        impact: "high"
+                        difficulty: "hard"
+                        category: "environmental"
+                        explanation: "An enclosure is nearly essential for reliable ABS printing"
+          TPU:
+            condition: "enclosure_type"
+            branches:
+              open:
+                causes:
+                  - description: "TPU adhesion failure from incorrect bed temperature or surface"
+                    likelihood: "medium"
+                    contributing_factors: ["bed temperature", "surface incompatibility", "z-offset"]
+                    recommendations:
+                      - setting: "bed_temperature"
+                        current_issue: "Too high or too low for TPU"
+                        suggested_value: "50C"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "TPU adheres well at moderate bed temperatures; too high can cause the base to deform"
+                      - setting: "first_layer_speed"
+                        current_issue: "Too fast for TPU adhesion"
+                        suggested_value: "15mm/s"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Very slow first layer gives TPU time to settle and bond with the bed"
+                      - setting: "bed_surface"
+                        current_issue: "Surface may be too smooth for TPU grip"
+                        suggested_value: "Blue painter's tape or textured PEI"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "TPU adheres well to textured surfaces that provide mechanical grip"
+              _default:
+                causes:
+                  - description: "TPU adhesion from bed temperature and surface issues"
+                    likelihood: "medium"
+                    contributing_factors: ["bed temperature", "bed surface", "first layer speed"]
+                    recommendations:
+                      - setting: "bed_temperature"
+                        current_issue: "Not optimized for TPU"
+                        suggested_value: "50C"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "50C provides good TPU adhesion without causing base deformation"
+          ASA:
+            condition: "enclosure_type"
+            branches:
+              open:
+                causes:
+                  - description: "ASA adhesion failure without enclosure due to thermal contraction"
+                    likelihood: "high"
+                    contributing_factors: ["no enclosure", "thermal stress", "drafts"]
+                    recommendations:
+                      - setting: "enclosure"
+                        current_issue: "No enclosure causing warping and adhesion loss"
+                        suggested_value: "Add enclosure or draft shield"
+                        impact: "high"
+                        difficulty: "hard"
+                        category: "environmental"
+                        explanation: "ASA has similar thermal properties to ABS and requires an enclosure for reliable adhesion"
+                      - setting: "bed_temperature"
+                        current_issue: "Too low for ASA"
+                        suggested_value: "100C"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "ASA requires 100C bed temperature like ABS to prevent thermal contraction"
+                      - setting: "brim_width"
+                        current_issue: "No brim or too narrow"
+                        suggested_value: "8mm"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Wide brim resists the peeling force from ASA thermal contraction"
+              enclosed:
+                causes:
+                  - description: "ASA adhesion failure in enclosure (uncommon, check settings)"
+                    likelihood: "low"
+                    contributing_factors: ["bed temperature", "surface preparation"]
+                    recommendations:
+                      - setting: "bed_temperature"
+                        current_issue: "May be below optimal for ASA"
+                        suggested_value: "100C"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "ASA needs 100C bed temperature even in an enclosure"
+                      - setting: "bed_surface_prep"
+                        current_issue: "Surface not prepared for ASA"
+                        suggested_value: "Clean with isopropyl alcohol; apply ABS/ASA slurry"
+                        impact: "medium"
+                        difficulty: "moderate"
+                        category: "controllable"
+                        explanation: "ASA slurry on the bed creates a chemical bond for maximum adhesion"
+              _default:
+                causes:
+                  - description: "ASA adhesion failure from thermal stress"
+                    likelihood: "high"
+                    contributing_factors: ["thermal contraction", "no enclosure"]
+                    recommendations:
+                      - setting: "bed_temperature"
+                        current_issue: "Not optimized for ASA"
+                        suggested_value: "100C"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "100C bed temperature is essential for ASA adhesion"
+          _default:
+            causes:
+              - description: "General bed adhesion failure"
+                likelihood: "high"
+                contributing_factors: ["z-offset too high", "bed temperature too low", "surface contamination", "first layer too fast"]
+                recommendations:
+                  - setting: "z_offset"
+                    current_issue: "Nozzle likely too far from bed"
+                    suggested_value: "Decrease by -0.05mm increments until first layer lines are flat and slightly overlapping"
+                    impact: "high"
+                    difficulty: "easy"
+                    category: "controllable"
+                    explanation: "Proper z-offset is the most critical factor for first layer adhesion on any material"
+                  - setting: "bed_temperature"
+                    current_issue: "May be below recommended for the material"
+                    suggested_value: "60C (PLA), 80C (PETG), 100C (ABS/ASA)"
+                    impact: "high"
+                    difficulty: "easy"
+                    category: "controllable"
+                    explanation: "Each material has a specific bed temperature range; ensure the bed is at the correct temperature before printing"
+                  - setting: "first_layer_speed"
+                    current_issue: "Too fast for reliable adhesion"
+                    suggested_value: "20mm/s"
+                    impact: "medium"
+                    difficulty: "easy"
+                    category: "controllable"
+                    explanation: "Slow first layer allows proper bonding regardless of material"
+
+    warping:
+      name: "Warping / Corner Lifting"
+      description: "Edges and corners of the print curl upward from the bed due to differential thermal contraction as the material cools"
+      root:
+        condition: "material_type"
+        branches:
+          PLA:
+            condition: "enclosure_type"
+            branches:
+              open:
+                causes:
+                  - description: "PLA warping from drafts or insufficient bed temperature"
+                    likelihood: "medium"
+                    contributing_factors: ["drafts on open printer", "bed temperature too low", "large flat part"]
+                    recommendations:
+                      - setting: "bed_temperature"
+                        current_issue: "Too low for large PLA parts"
+                        suggested_value: "65C"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Slightly higher bed temp for large PLA parts keeps the base above softening point, reducing contraction stress"
+                      - setting: "brim_width"
+                        current_issue: "No brim or too narrow for part size"
+                        suggested_value: "5mm"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Brim increases the contact area and holds corners down against contraction forces"
+                      - setting: "part_cooling_fan"
+                        current_issue: "Fan at 100% from first layer causing rapid cooling"
+                        suggested_value: "0% layer 1, ramp to 100% by layer 4"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Gradual fan ramp prevents shock-cooling the first layers which causes differential contraction"
+                      - setting: "printer_location"
+                        current_issue: "Open printer near draft source"
+                        suggested_value: "Move away from AC vents, open windows, and foot traffic"
+                        impact: "medium"
+                        difficulty: "moderate"
+                        category: "environmental"
+                        explanation: "Drafts cause asymmetric cooling that creates warping forces"
+              _default:
+                causes:
+                  - description: "PLA warping from cooling or adhesion issues"
+                    likelihood: "medium"
+                    contributing_factors: ["temperature differential", "large flat geometry"]
+                    recommendations:
+                      - setting: "bed_temperature"
+                        current_issue: "May be too low"
+                        suggested_value: "65C"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "PLA warps less with slightly elevated bed temperature on large parts"
+                      - setting: "brim_width"
+                        current_issue: "No brim"
+                        suggested_value: "5mm"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Brims are the most effective anti-warping measure for PLA"
+          PETG:
+            condition: "enclosure_type"
+            branches:
+              open:
+                causes:
+                  - description: "PETG warping from thermal contraction on open printer"
+                    likelihood: "medium"
+                    contributing_factors: ["temperature differential", "drafts", "large part"]
+                    recommendations:
+                      - setting: "bed_temperature"
+                        current_issue: "Too low for anti-warp"
+                        suggested_value: "85C"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Higher bed temp keeps PETG base layers softer and reduces contraction stress"
+                      - setting: "brim_width"
+                        current_issue: "No brim"
+                        suggested_value: "6mm"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Brim resists corner lifting from PETG thermal contraction"
+                      - setting: "part_cooling_fan"
+                        current_issue: "Fan too high for PETG"
+                        suggested_value: "50%"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "PETG prefers less cooling than PLA; excessive fan speed amplifies warping"
+              _default:
+                causes:
+                  - description: "PETG warping from thermal stress"
+                    likelihood: "medium"
+                    contributing_factors: ["thermal contraction", "bed temperature"]
+                    recommendations:
+                      - setting: "bed_temperature"
+                        current_issue: "Not optimized"
+                        suggested_value: "85C"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "85C minimizes PETG thermal stress at the bed interface"
+          ABS:
+            condition: "enclosure_type"
+            branches:
+              open:
+                causes:
+                  - description: "ABS warping is severe without enclosure due to high thermal contraction"
+                    likelihood: "high"
+                    contributing_factors: ["high thermal contraction coefficient", "no enclosure", "rapid cooling"]
+                    recommendations:
+                      - setting: "enclosure"
+                        current_issue: "No enclosure causes severe ABS warping"
+                        suggested_value: "Enclosed printer or makeshift enclosure (cardboard box, LACK enclosure)"
+                        impact: "high"
+                        difficulty: "hard"
+                        category: "environmental"
+                        explanation: "An enclosure is nearly mandatory for ABS; it reduces the temperature gradient that drives warping"
+                      - setting: "bed_temperature"
+                        current_issue: "Too low for ABS"
+                        suggested_value: "110C"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Higher bed temperature keeps ABS above glass transition at the base, preventing contraction-driven warping"
+                      - setting: "brim_width"
+                        current_issue: "Brim too narrow for ABS warping forces"
+                        suggested_value: "10mm"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "ABS requires wide brims to counteract its strong warping tendency"
+                      - setting: "part_cooling_fan"
+                        current_issue: "Fan on during ABS print"
+                        suggested_value: "0%"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Part cooling fan must be off for ABS; any cooling increases thermal gradient and warping"
+              enclosed:
+                causes:
+                  - description: "ABS warping in enclosure from insufficient chamber temperature"
+                    likelihood: "medium"
+                    contributing_factors: ["chamber not warm enough", "enclosure leaking heat", "bed temperature"]
+                    recommendations:
+                      - setting: "enclosure_temperature"
+                        current_issue: "Chamber not reaching adequate temperature"
+                        suggested_value: "50-60C chamber temperature"
+                        impact: "high"
+                        difficulty: "moderate"
+                        category: "environmental"
+                        explanation: "ABS needs a warm chamber to minimize the temperature difference between layers and reduce warping"
+                      - setting: "bed_temperature"
+                        current_issue: "May need to be higher"
+                        suggested_value: "105C"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "105C in an enclosed environment provides optimal ABS adhesion without over-softening"
+                      - setting: "brim_width"
+                        current_issue: "May need a wider brim for large parts"
+                        suggested_value: "8mm"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Even in an enclosure, large ABS parts benefit from brims to hold corners down"
+              _default:
+                causes:
+                  - description: "ABS warping from high thermal contraction"
+                    likelihood: "high"
+                    contributing_factors: ["material properties", "cooling rate"]
+                    recommendations:
+                      - setting: "enclosure"
+                        current_issue: "ABS requires controlled thermal environment"
+                        suggested_value: "Enclosed printer or enclosure kit"
+                        impact: "high"
+                        difficulty: "hard"
+                        category: "environmental"
+                        explanation: "ABS has the highest warping tendency among common filaments and needs temperature management"
+                      - setting: "bed_temperature"
+                        current_issue: "Not high enough"
+                        suggested_value: "110C"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "High bed temperature is essential to keep ABS base layers above glass transition"
+          TPU:
+            condition: "enclosure_type"
+            branches:
+              _default:
+                causes:
+                  - description: "TPU warping is rare due to material flexibility"
+                    likelihood: "low"
+                    contributing_factors: ["very low thermal contraction", "material flexibility absorbs stress"]
+                    recommendations:
+                      - setting: "bed_temperature"
+                        current_issue: "Verify bed temperature is correct"
+                        suggested_value: "50C"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "TPU rarely warps; if it does, verify bed temperature is in the correct range"
+                      - setting: "first_layer_speed"
+                        current_issue: "First layer may not be adhering evenly"
+                        suggested_value: "15mm/s"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Slow first layer ensures even TPU deposition for consistent adhesion"
+          ASA:
+            condition: "enclosure_type"
+            branches:
+              open:
+                causes:
+                  - description: "ASA warping without enclosure similar to ABS"
+                    likelihood: "high"
+                    contributing_factors: ["high thermal contraction", "no enclosure", "drafts"]
+                    recommendations:
+                      - setting: "enclosure"
+                        current_issue: "No enclosure causes severe ASA warping"
+                        suggested_value: "Enclosed printer or enclosure kit"
+                        impact: "high"
+                        difficulty: "hard"
+                        category: "environmental"
+                        explanation: "ASA has similar warping behavior to ABS and requires an enclosure"
+                      - setting: "bed_temperature"
+                        current_issue: "Too low for ASA"
+                        suggested_value: "105C"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "ASA needs 100-110C bed temperature to prevent warping"
+                      - setting: "brim_width"
+                        current_issue: "No brim or too narrow"
+                        suggested_value: "10mm"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Wide brim counteracts ASA thermal contraction on large parts"
+              enclosed:
+                causes:
+                  - description: "ASA warping in enclosure from chamber temperature"
+                    likelihood: "medium"
+                    contributing_factors: ["chamber not warm enough"]
+                    recommendations:
+                      - setting: "enclosure_temperature"
+                        current_issue: "Chamber not warm enough for ASA"
+                        suggested_value: "50-55C chamber temperature"
+                        impact: "high"
+                        difficulty: "moderate"
+                        category: "environmental"
+                        explanation: "Warm chamber reduces the thermal gradient that drives ASA warping"
+                      - setting: "bed_temperature"
+                        current_issue: "May be too low"
+                        suggested_value: "100C"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "100C in an enclosure provides reliable ASA adhesion"
+              _default:
+                causes:
+                  - description: "ASA warping from thermal contraction"
+                    likelihood: "high"
+                    contributing_factors: ["high thermal contraction", "environmental cooling"]
+                    recommendations:
+                      - setting: "enclosure"
+                        current_issue: "ASA requires temperature-controlled environment"
+                        suggested_value: "Use enclosed printer"
+                        impact: "high"
+                        difficulty: "hard"
+                        category: "environmental"
+                        explanation: "ASA warping is severe without an enclosure"
+          _default:
+            causes:
+              - description: "Warping from thermal contraction and insufficient adhesion"
+                likelihood: "high"
+                contributing_factors: ["thermal contraction", "bed temperature too low", "drafts", "no brim"]
+                recommendations:
+                  - setting: "brim_width"
+                    current_issue: "No brim to resist warping forces"
+                    suggested_value: "5-10mm depending on material"
+                    impact: "high"
+                    difficulty: "easy"
+                    category: "controllable"
+                    explanation: "Brims are the most universally effective anti-warping measure"
+                  - setting: "bed_temperature"
+                    current_issue: "May be too low for the material"
+                    suggested_value: "60C (PLA), 80C (PETG), 100C (ABS/ASA)"
+                    impact: "high"
+                    difficulty: "easy"
+                    category: "controllable"
+                    explanation: "Adequate bed temperature keeps the base layers above the material's stress threshold"
+                  - setting: "part_cooling_fan"
+                    current_issue: "May be too high for early layers"
+                    suggested_value: "0% for first 3 layers, then gradual ramp"
+                    impact: "medium"
+                    difficulty: "easy"
+                    category: "controllable"
+                    explanation: "Aggressive cooling on early layers creates thermal shock that drives warping"
+
+    elephant_foot:
+      name: "Elephant Foot"
+      description: "The first few layers bulge outward wider than the rest of the print, caused by the weight of the model compressing the soft first layers against the heated bed"
+      root:
+        condition: "material_type"
+        branches:
+          PLA:
+            condition: "enclosure_type"
+            branches:
+              open:
+                causes:
+                  - description: "PLA elephant foot from bed temperature too high or z-offset too low"
+                    likelihood: "high"
+                    contributing_factors: ["bed temperature softening first layers", "nozzle too close squishing material", "first layer flow too high"]
+                    recommendations:
+                      - setting: "bed_temperature"
+                        current_issue: "Too high causing first layers to remain soft"
+                        suggested_value: "55C"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Lower bed temperature allows PLA first layers to solidify faster and resist compression from upper layers"
+                      - setting: "z_offset"
+                        current_issue: "Nozzle too close to bed"
+                        suggested_value: "Increase by +0.02-0.05mm from current"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Too-close nozzle over-squishes the first layer, forcing material outward"
+                      - setting: "first_layer_flow"
+                        current_issue: "First layer flow too high"
+                        suggested_value: "95%"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Reducing first layer flow prevents excess material from being forced outward"
+                      - setting: "elephant_foot_compensation"
+                        current_issue: "Slicer compensation not enabled"
+                        suggested_value: "0.2mm"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Most slicers have an elephant foot compensation setting that insets the first layer perimeter to offset the bulge"
+              _default:
+                causes:
+                  - description: "PLA elephant foot from bed temperature and first layer settings"
+                    likelihood: "high"
+                    contributing_factors: ["bed too hot", "nozzle too close", "first layer flow"]
+                    recommendations:
+                      - setting: "bed_temperature"
+                        current_issue: "Too high for dimensional accuracy"
+                        suggested_value: "55C"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Lower bed temp is the primary fix for PLA elephant foot"
+                      - setting: "elephant_foot_compensation"
+                        current_issue: "Not enabled"
+                        suggested_value: "0.2mm"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Slicer-level compensation insets the first layer to offset the bulge"
+          PETG:
+            condition: "enclosure_type"
+            branches:
+              open:
+                causes:
+                  - description: "PETG elephant foot from high bed temperature and low viscosity"
+                    likelihood: "high"
+                    contributing_factors: ["high bed temperature", "PETG stays soft longer", "nozzle too close"]
+                    recommendations:
+                      - setting: "bed_temperature"
+                        current_issue: "Too high causing prolonged softness in first layers"
+                        suggested_value: "75C"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "PETG remains soft at higher temperatures; reducing bed temp helps first layers solidify before upper layers add weight"
+                      - setting: "z_offset"
+                        current_issue: "Nozzle too close for PETG"
+                        suggested_value: "Increase by +0.03mm from current"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "PETG spreads more than PLA; a slightly higher z-offset reduces squish"
+                      - setting: "elephant_foot_compensation"
+                        current_issue: "Not enabled"
+                        suggested_value: "0.25mm"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "PETG may need slightly more compensation than PLA due to its tendency to spread"
+                      - setting: "first_layer_speed"
+                        current_issue: "First layer too slow allowing heat to build up"
+                        suggested_value: "20mm/s"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Moderately fast first layer reduces heat accumulation from the nozzle dwelling over the same area"
+              _default:
+                causes:
+                  - description: "PETG elephant foot from bed temperature and material spread"
+                    likelihood: "high"
+                    contributing_factors: ["bed temperature", "PETG flow characteristics"]
+                    recommendations:
+                      - setting: "bed_temperature"
+                        current_issue: "Too high"
+                        suggested_value: "75C"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Lower bed temp reduces PETG elephant foot while maintaining adhesion"
+                      - setting: "elephant_foot_compensation"
+                        current_issue: "Not configured"
+                        suggested_value: "0.25mm"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Slicer compensation is the most reliable fix for PETG elephant foot"
+          ABS:
+            condition: "enclosure_type"
+            branches:
+              enclosed:
+                causes:
+                  - description: "ABS elephant foot from high bed temperature and warm chamber softening base"
+                    likelihood: "high"
+                    contributing_factors: ["high bed temperature", "warm enclosure", "weight compression"]
+                    recommendations:
+                      - setting: "bed_temperature"
+                        current_issue: "Higher than needed with enclosure"
+                        suggested_value: "95C"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "In an enclosure, ABS needs less bed heat; lowering temp helps first layers solidify and resist compression"
+                      - setting: "elephant_foot_compensation"
+                        current_issue: "Not configured"
+                        suggested_value: "0.2mm"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Slicer compensation counteracts the bulge at the base of ABS prints"
+                      - setting: "first_layer_flow"
+                        current_issue: "Too high"
+                        suggested_value: "95%"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Slightly reduced first layer flow prevents excess material from spreading outward"
+              _default:
+                causes:
+                  - description: "ABS elephant foot from high bed and chamber temperatures"
+                    likelihood: "high"
+                    contributing_factors: ["high bed temperature required for adhesion", "warm chamber"]
+                    recommendations:
+                      - setting: "elephant_foot_compensation"
+                        current_issue: "Not configured"
+                        suggested_value: "0.2mm"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Elephant foot compensation is essential for ABS since high bed temps cannot be lowered much without losing adhesion"
+                      - setting: "bed_temperature"
+                        current_issue: "May be higher than needed"
+                        suggested_value: "95-100C"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Use the minimum bed temperature that provides reliable adhesion"
+          ASA:
+            condition: "enclosure_type"
+            branches:
+              enclosed:
+                causes:
+                  - description: "ASA elephant foot from high bed and chamber temperatures"
+                    likelihood: "high"
+                    contributing_factors: ["high bed temperature", "warm enclosure"]
+                    recommendations:
+                      - setting: "elephant_foot_compensation"
+                        current_issue: "Not configured"
+                        suggested_value: "0.2mm"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Like ABS, ASA needs slicer compensation since high bed temps are required"
+                      - setting: "bed_temperature"
+                        current_issue: "Higher than needed in enclosure"
+                        suggested_value: "95C"
+                        impact: "medium"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Lowering bed temp slightly in an enclosure helps first layers solidify faster"
+              _default:
+                causes:
+                  - description: "ASA elephant foot from high temperature requirements"
+                    likelihood: "high"
+                    contributing_factors: ["high bed temperature", "warm chamber"]
+                    recommendations:
+                      - setting: "elephant_foot_compensation"
+                        current_issue: "Not configured"
+                        suggested_value: "0.2mm"
+                        impact: "high"
+                        difficulty: "easy"
+                        category: "controllable"
+                        explanation: "Slicer-level compensation is the most practical fix for ASA elephant foot"
+          _default:
+            causes:
+              - description: "Elephant foot from bed temperature, z-offset, or first layer flow"
+                likelihood: "high"
+                contributing_factors: ["bed temperature too high", "nozzle too close", "first layer flow too high"]
+                recommendations:
+                  - setting: "elephant_foot_compensation"
+                    current_issue: "Not enabled in slicer"
+                    suggested_value: "0.2mm"
+                    impact: "high"
+                    difficulty: "easy"
+                    category: "controllable"
+                    explanation: "The most universally effective fix; insets the first layer outline to compensate for the outward bulge"
+                  - setting: "bed_temperature"
+                    current_issue: "Higher than needed"
+                    suggested_value: "Reduce by 5C from current setting"
+                    impact: "high"
+                    difficulty: "easy"
+                    category: "controllable"
+                    explanation: "Lower bed temperature helps first layers solidify faster and resist compression from upper layers"
+                  - setting: "z_offset"
+                    current_issue: "Nozzle too close"
+                    suggested_value: "Increase by +0.02-0.05mm"
+                    impact: "medium"
+                    difficulty: "easy"
+                    category: "controllable"
+                    explanation: "A slightly higher z-offset reduces first layer squish and outward material spread"
