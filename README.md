@@ -82,6 +82,25 @@ for rec in result.recommendations:
 ```
 
 ```python
+# Diagnose a failed print and get specific fix recommendations
+from print3d_skill import diagnose_print
+from print3d_skill.diagnosis.models import (
+    DiagnosticContext, PrintDefect, PrintDefectCategory,
+)
+
+defects = [PrintDefect(
+    category=PrintDefectCategory.stringing,
+    description="Thin strings between travel moves",
+    confidence="high",
+)]
+context = DiagnosticContext(printer_model="Bambu Lab P1S", material="PETG")
+result = diagnose_print(defects, context)
+
+for rec in result.recommendations:
+    print(f"  {rec.setting}: {rec.suggested_value} ({rec.impact} impact)")
+```
+
+```python
 # Discover available tools
 from print3d_skill import list_capabilities
 
@@ -92,7 +111,7 @@ for cap in list_capabilities():
 
 ## Current Status
 
-Five features are complete, covering the full create/fix/modify/validate pipeline:
+All six features are complete, covering the full create/fix/modify/diagnose/validate pipeline:
 
 ### Roadmap
 
@@ -103,7 +122,7 @@ Five features are complete, covering the full create/fix/modify/validate pipelin
 | F3: Parametric CAD | Create | **Complete** |
 | F4: Model Modification | Modify | **Complete** |
 | F5: G-code & Slicing | Validate | **Complete** |
-| F6: Print Diagnosis | Diagnose | Planned |
+| F6: Print Diagnosis | Diagnose | **Complete** |
 
 See [docs/feature-chunking-strategy.md](docs/feature-chunking-strategy.md) for the full breakdown.
 
@@ -116,6 +135,7 @@ src/print3d_skill/
 ├── validate/           # Validate mode: G-code parser, validation engine, profiles
 ├── slicing/            # Slicer CLI integration (PrusaSlicer, OrcaSlicer)
 ├── printing/           # Printer control (OctoPrint, Moonraker, Bambu Lab)
+├── diagnosis/          # Diagnose mode: decision trees, root causes, recommendations
 ├── analysis/           # Mesh defect detection (10 detectors)
 ├── repair/             # Mesh repair pipeline (6 strategies)
 ├── export/             # Format-specific mesh exporters

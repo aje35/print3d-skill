@@ -1,0 +1,222 @@
+metadata:
+  type: printer_capabilities
+  topic: printer_troubleshooting
+  modes: [diagnose]
+  version: "1.0"
+
+data:
+  description: "Printer family-specific troubleshooting knowledge, known quirks, community tips, and settings overrides for FDM diagnosis"
+  printer_families:
+    - name: Bambu Lab
+      models:
+        - P1S
+        - P1P
+        - X1C
+        - X1E
+        - A1
+        - A1 Mini
+      extruder_type: direct_drive
+      has_enclosure:
+        P1S: true
+        P1P: false
+        X1C: true
+        X1E: true
+        A1: false
+        A1 Mini: false
+      known_quirks:
+        - quirk: "AMS filament hub can add friction to the filament path, causing under-extrusion on flexible materials like TPU. The PTFE path through the AMS is long and has multiple bends."
+        - quirk: "The stock hardened steel nozzle on the X1C runs slightly cooler than the reported temperature. Prints may need 5C higher than typical for a given material."
+        - quirk: "Auto bed leveling on the P1S/X1C can produce a mesh that compensates too aggressively, causing first-layer inconsistency on textured PEI plates. The lidar sensor can misread textured surfaces."
+        - quirk: "The P1P lacks an enclosure by default. ABS and ASA prints will warp or split without an aftermarket enclosure, despite the machine technically supporting those temperatures."
+        - quirk: "High-speed printing (above 200mm/s) with the default acceleration settings can cause ringing artifacts on sharp corners, especially visible on cubic or rectangular geometry."
+      community_tips:
+        - tip: "For best results with TPU on Bambu printers, bypass the AMS and feed directly into the extruder. Use the external spool holder and route filament through the PTFE guide tube."
+        - tip: "If experiencing inconsistent first layers on the X1C, recalibrate the lidar manually rather than relying on auto-calibration. The Bambu wiki has a procedure for manual Z-offset tuning."
+        - tip: "The P1S enclosure retains enough heat for ABS but benefits from blocking the top vent opening with tape during long prints in cold ambient environments (below 20C)."
+        - tip: "Bambu Studio's default profiles are aggressive on speed. For dimensional accuracy or surface finish, create a custom profile with max volumetric speed limited to 12mm3/s for PLA and 8mm3/s for PETG."
+        - tip: "The A1 and A1 Mini have no enclosure and a partially open frame. They excel at PLA and PETG but are not suitable for ABS without significant aftermarket modification."
+      recommended_settings_overrides:
+        stringing:
+          retraction_distance_mm: 0.8
+          retraction_speed_mm_s: 30
+          z_hop_mm: 0.4
+          notes: "Bambu direct-drive extruder uses short retraction. Longer retraction causes jams in the hardened steel nozzle. Z-hop helps with Bambu's fast travel moves."
+        warping:
+          bed_temp_c: 60
+          first_layer_speed_mm_s: 50
+          notes: "Bambu printers print first layers fast by default. Slow to 50mm/s for warp-prone materials. The textured PEI plate provides good adhesion for PLA without glue."
+        layer_adhesion:
+          hotend_temp_c: 215
+          fan_speed_percent: 70
+          notes: "Bambu's part cooling fan is powerful. Reduce to 70% if seeing layer splits on PLA. For ABS/ASA in the X1C, set fan to 0% and close the front door."
+        elephant_foot:
+          first_layer_flow_percent: 95
+          elephant_foot_compensation_mm: 0.15
+          notes: "Bambu's auto flow calibration can over-extrude the first layer. Manual flow calibration is more accurate for dimensional prints."
+        blobs_and_zits:
+          pressure_advance: 0.04
+          coast_distance_mm: 0.2
+          seam_position: nearest
+          notes: "Bambu firmware supports pressure advance natively. Tune via the calibration menu in Bambu Studio for each filament profile."
+      firmware_notes: >
+        Bambu printers run proprietary firmware with limited user access.
+        Firmware updates can change default calibration values and print
+        behavior. After a firmware update, re-run flow calibration and verify
+        pressure advance values. The X1C and P1S support LAN-only mode for
+        users who prefer not to use cloud services. Some community firmware
+        projects exist but void the warranty.
+      common_mods:
+        - mod: "Hardened steel to copper-alloy nozzle swap — improves thermal conductivity and reduces the temperature offset seen with the stock nozzle. Recommended for PLA and PETG."
+        - mod: "AMS humidity mod — adding desiccant holders inside the AMS or using a drybox-to-AMS PTFE feed to keep filament dry during multi-day prints."
+        - mod: "P1P enclosure kit — aftermarket acrylic or polycarbonate panels to enclose the P1P for ABS/ASA printing. Essential for draft-sensitive materials."
+        - mod: "A1 spool holder relocation — moving the spool holder to reduce filament path length and friction, improving feeding reliability for softer materials."
+
+    - name: Prusa Research
+      models:
+        - MK4S
+        - MK4
+        - MK3S+
+        - MINI+
+        - XL
+        - CORE One
+      extruder_type: direct_drive
+      has_enclosure:
+        MK4S: false
+        MK4: false
+        MK3S+: false
+        MINI+: false
+        XL: false
+        CORE One: true
+      known_quirks:
+        - quirk: "The MK3S+ heatbed can develop cold spots near the edges after extended use, causing adhesion issues on large prints that span the full build plate."
+        - quirk: "SuperPINDA probe on MK4/MK4S can give inconsistent readings if the nozzle has residual filament on it during probing. Clean the nozzle before homing."
+        - quirk: "The MINI+ has a bowden-style PTFE tube between the extruder and the hotend (despite being a direct-drive design). This short tube can degrade over time and cause extrusion issues."
+        - quirk: "Input shaper on the MK4/MK4S can mask ringing issues but may introduce slight surface artifacts at certain speeds. If surface quality is critical, consider disabling input shaper."
+        - quirk: "The XL's multi-tool head parking system can occasionally leave filament ooze on the wipe tower transition area, causing blobs on the first moves after a tool change."
+      community_tips:
+        - tip: "For the MK3S+, Nylock mod (replacing bed spacers with nylon lock nuts) provides more precise manual bed leveling than the stock spacers and compensates for slight bed warping."
+        - tip: "PrusaSlicer's built-in calibration tools (flow, pressure advance via the LA menu) are well-documented. Use the live-adjust Z during the first layer to fine-tune Z-offset; the paper test alone is insufficient."
+        - tip: "The MK4 Nextruder has a load cell for first-layer calibration. If first layers are inconsistent, recalibrate the load cell via the printer menu. Temperature can affect load cell readings."
+        - tip: "For the smooth PEI sheet on Prusa printers, clean with 90%+ isopropyl alcohol before every print. Every 10-20 prints, wash with unscented dish soap and water. Avoid touching the print surface."
+        - tip: "The satin (textured) sheet works best with PETG and provides easier release than smooth PEI. For PLA on satin, increase bed temp by 5C above the default profile."
+      recommended_settings_overrides:
+        stringing:
+          retraction_distance_mm: 0.8
+          retraction_speed_mm_s: 35
+          notes: "Prusa Nextruder (MK4/MK4S) uses very short retraction. The MK3S+ Bondtech extruder can handle up to 1.2mm. Never exceed 2mm on either."
+        warping:
+          bed_temp_c: 60
+          first_layer_speed_mm_s: 20
+          brim_width_mm: 5
+          notes: "Prusa's heatbed is well-calibrated. For PLA warping, a draft shield in PrusaSlicer is effective. Ensure the printer is not near a window, door, or air vent."
+        layer_adhesion:
+          hotend_temp_c: 215
+          fan_speed_percent: 60
+          print_speed_mm_s: 45
+          notes: "MK4 can print fast with input shaper but layer adhesion on functional parts benefits from slowing to 45mm/s and reducing fan."
+        elephant_foot:
+          first_layer_flow_percent: 95
+          elephant_foot_compensation_mm: 0.2
+          notes: "PrusaSlicer has elephant foot compensation built in. Set via Print Settings > Advanced > Elephant foot compensation."
+        blobs_and_zits:
+          pressure_advance: 0.045
+          coast_distance_mm: 0.2
+          seam_position: aligned
+          notes: "Prusa firmware calls pressure advance 'Linear Advance' (LA). Tune with the LA calibration tower from the Prusa knowledge base. MK4/MK4S use LA 1.5."
+      firmware_notes: >
+        Prusa firmware is open source (Buddy for MK4/MK4S, Marlin-based for
+        MK3S+). Linear Advance is built in and configurable via G-code
+        (M900 K-value). Firmware updates occasionally reset EEPROM-stored
+        calibration values; re-check Z-offset and flow after updating. The
+        MK4 supports USB and PrusaLink for print management.
+      common_mods:
+        - mod: "MK3S+ Bear frame upgrade — replaces the stock frame with stiffer aluminum extrusions. Reduces wobble and improves print quality at higher speeds."
+        - mod: "Enclosure (Prusa's own or IKEA Lack enclosure hack) — essential for ABS/ASA on all Prusa open-frame printers. The Lack enclosure is well-documented in the community."
+        - mod: "MK3S+ Bondtech extruder upgrade — improves filament grip and reduces grinding. Less necessary on MK4 which uses the Nextruder."
+        - mod: "Silicone bed spacer mod — replaces stock spacers with silicone tubes for better vibration dampening and slightly improved print quality."
+        - mod: "Raspberry Pi + OctoPrint or Klipper conversion — popular on MK3S+ for remote monitoring and advanced features. Klipper provides input shaping on the MK3S+ which the stock firmware lacks."
+
+    - name: Creality
+      models:
+        - Ender 3 V3
+        - Ender 3 V3 KE
+        - Ender 3 S1 Pro
+        - Ender 3 V2 Neo
+        - CR-10 Smart Pro
+        - K1
+        - K1 Max
+      extruder_type:
+        Ender 3 V3: direct_drive
+        Ender 3 V3 KE: direct_drive
+        Ender 3 S1 Pro: direct_drive
+        Ender 3 V2 Neo: bowden
+        CR-10 Smart Pro: direct_drive
+        K1: direct_drive
+        K1 Max: direct_drive
+      has_enclosure:
+        Ender 3 V3: false
+        Ender 3 V3 KE: false
+        Ender 3 S1 Pro: false
+        Ender 3 V2 Neo: false
+        CR-10 Smart Pro: false
+        K1: true
+        K1 Max: true
+      known_quirks:
+        - quirk: "Stock Creality bowden setups (V2 Neo and older Ender 3 models) have long PTFE tubes that wear at the hotend coupler, causing gaps that lead to heat creep and clogs. The tube must be seated flush against the nozzle."
+        - quirk: "The K1 and K1 Max use a proprietary extruder and hotend that can be difficult to source replacement parts for. Third-party nozzles may not fit without adaptation."
+        - quirk: "Creality's stock firmware on older Ender models has limited thermal runaway protection. Community firmware (Marlin or Klipper) is strongly recommended for safety."
+        - quirk: "The CR-touch (auto bed level probe on newer models) can give inconsistent readings on glass beds. PEI spring steel sheets provide more reliable probing."
+        - quirk: "Creality slicer (Creality Print) has fewer features than Cura or PrusaSlicer. Many community profiles for Cura and OrcaSlicer produce better results than the stock Creality profiles."
+      community_tips:
+        - tip: "For Ender 3 bowden models, the single most impactful upgrade is replacing the stock PTFE coupler with a quality pneumatic fitting (like the Capricorn XS fittings) and using Capricorn PTFE tubing. This alone fixes many clog and extrusion issues."
+        - tip: "Upgrading to Klipper firmware on Creality printers (especially Ender 3 V2/V3 and K1) dramatically improves print quality through input shaping and pressure advance. The K1 ships with Klipper-based firmware."
+        - tip: "The stock Creality bed springs are weak and lose tension over time. Replacing with stiffer yellow springs or silicone bed mounts eliminates the need for frequent bed re-leveling."
+        - tip: "For the K1/K1 Max, enable the input shaper calibration through the touch screen menu. The stock profiles may not be optimal for your specific machine due to manufacturing variance."
+        - tip: "On the V2 Neo and older bowden Enders, if experiencing under-extrusion after retractions, check the extruder arm for cracks. The stock plastic extruder arm is known to crack, especially at the tension point."
+      recommended_settings_overrides:
+        stringing:
+          retraction_distance_bowden_mm: 6.0
+          retraction_distance_direct_drive_mm: 0.8
+          retraction_speed_mm_s: 45
+          notes: "Bowden Creality printers need 5-7mm retraction. Direct-drive models (S1 Pro, K1) use 0.5-1.0mm. The K1 firmware handles retraction aggressively — reduce if getting gaps after travel."
+        warping:
+          bed_temp_c: 60
+          first_layer_speed_mm_s: 20
+          brim_width_mm: 8
+          notes: "Creality glass beds (Ender 3 V2, CR-10) hold parts well when clean but release poorly when cold. PEI sheet upgrade is the single best improvement for bed adhesion consistency."
+        layer_adhesion:
+          hotend_temp_c: 210
+          fan_speed_percent: 80
+          print_speed_mm_s: 45
+          notes: "Older Ender models have weak part cooling fans. If overhangs droop, consider a dual 5015 fan duct mod. The K1 has adequate stock cooling."
+        elephant_foot:
+          first_layer_flow_percent: 95
+          elephant_foot_compensation_mm: 0.2
+          z_offset_adjustment_mm: 0.02
+          notes: "Creality printers often need manual Z-offset tuning. If elephant foot persists after compensation, raise Z-offset by 0.02mm increments."
+        blobs_and_zits:
+          retraction_distance_bowden_mm: 6.5
+          retraction_speed_mm_s: 45
+          coast_distance_mm: 0.3
+          seam_position: sharpest_corner
+          notes: "Bowden systems are more prone to blobs due to pressure hysteresis. Coasting and wiping help. On Klipper firmware, pressure advance is the best single fix."
+        under_extrusion:
+          hotend_temp_c: 210
+          print_speed_mm_s: 40
+          flow_rate_percent: 100
+          notes: "Check for cracked extruder arm (plastic models), worn PTFE tube, or loose coupler before adjusting flow. Hardware issues cause most Creality under-extrusion problems."
+      firmware_notes: >
+        Creality printers ship with Marlin-based firmware on older models and
+        Klipper-based firmware on the K1 series. The stock Marlin firmware on
+        Ender 3 models is often outdated and may lack thermal runaway protection.
+        Flashing community Marlin (from the Marlin project or TH3D) or converting
+        to Klipper is strongly recommended. The K1's Klipper implementation is
+        customized; community Klipper configs are available for standard Klipper
+        installations on the K1 hardware. Creality Sonic Pad provides Klipper
+        integration for non-K1 printers.
+      common_mods:
+        - mod: "All-metal hotend (Micro Swiss, Slice Engineering Mosquito, or TriangleLab) — replaces the stock PTFE-lined hotend on older Enders, enabling printing above 240C without PTFE degradation. Essential for ABS, ASA, and nylon."
+        - mod: "Direct drive conversion (Micro Swiss, TriangleLab, or Sherpa Mini on older bowden Enders) — shortens filament path dramatically, improving TPU printing and reducing stringing. Adds weight to the X-carriage."
+        - mod: "Dual 5015 blower fan duct (Hero Me, Satsana, or BullsEye) — dramatically improves part cooling for overhangs and bridging on all Ender 3 variants."
+        - mod: "PEI spring steel build plate — replaces glass or magnetic build surfaces. Provides excellent adhesion when hot and parts pop off when cooled. Single most popular Creality mod."
+        - mod: "Yellow bed springs or silicone spacers — replaces stock springs to maintain bed level consistency. Silicone spacers never need re-tensioning."

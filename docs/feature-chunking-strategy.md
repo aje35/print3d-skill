@@ -16,7 +16,7 @@ F1  Core Infrastructure          ✓ Complete
  ├── F3  Parametric CAD          ✓ Complete (Create mode)
  │    └── F4  Model Modification ✓ Complete (Modify mode)
  ├── F5  G-code & Slicing        ✓ Complete (Validate mode + slicer/printer)
- └── F6  Print Diagnosis           Planned  (Diagnose mode)
+ └── F6  Print Diagnosis         ✓ Complete (Diagnose mode)
 
 Parallel opportunities:
   F5 and F6 can be specified in parallel (independent domains)

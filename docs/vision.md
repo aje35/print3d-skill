@@ -118,7 +118,9 @@ This project grew out of a mesh repair pipeline (`repair_topo_stl.py`) built to 
 
 **F5: G-code Validation & Slicing** — Complete. G-code parser for 4 slicers (PrusaSlicer, Bambu Studio, OrcaSlicer, Cura), settings validation against material/printer profiles (pass/warn/fail), slicer CLI integration (PrusaSlicer, OrcaSlicer), printer control backends (OctoPrint REST, Moonraker REST, Bambu MQTT), validate-before-print enforcement, 9 knowledge YAML files.
 
-**Next**: F6 (Print Diagnosis) to enable Diagnose mode.
+**F6: Print Diagnosis** — Complete. Diagnose mode with 12 defect categories (stringing, layer shifts, warping, under/over-extrusion, bed adhesion failure, elephant foot, poor bridging, support scarring, layer separation, zits/blobs, ghosting), diagnostic decision trees per defect type with context-aware tree walking (material, extruder type, printer family), severity enrichment (cosmetic/functional/print_stopping), specific numeric recommendations sorted by severity/impact/ease, conflict detection, 9 knowledge YAML files covering defect guides, decision trees, material failure modes (PLA/PETG/ABS/TPU/ASA), printer troubleshooting (Bambu/Prusa/Creality), and calibration procedures.
+
+All six features are complete. The full create/fix/modify/diagnose/validate pipeline is operational.
 
 Research (completed):
 1. Visual feedback architecture — matplotlib mplot3d with Agg backend for headless rendering

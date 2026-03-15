@@ -13,6 +13,8 @@ VALID_KNOWLEDGE_TYPES = (
     "design_pattern",
     "lookup_table",
     "printer_capabilities",
+    "defect_guide",
+    "calibration_procedure",
 )
 
 

@@ -10,6 +10,7 @@ __version__ = "0.1.0"
 
 from print3d_skill.analysis import analyze_mesh
 from print3d_skill.create import create_design, validate_printability
+from print3d_skill.diagnosis import diagnose_print
 from print3d_skill.export import export_mesh
 from print3d_skill.knowledge import query_knowledge
 from print3d_skill.modify import modify_mesh
@@ -29,6 +30,7 @@ from print3d_skill.validate import parse_gcode, validate_gcode
 __all__ = [
     "analyze_mesh",
     "create_design",
+    "diagnose_print",
     "export_mesh",
     "get_capability",
     "list_capabilities",
